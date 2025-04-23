@@ -163,10 +163,7 @@ export function MobileSidebar() {
             <Home className="h-6 w-6" />
             <span className="text-lg font-bold">Studio1:1</span>
           </Link>
-          <Button variant="ghost" size="icon" className="ml-auto" onClick={() => setOpen(false)}>
-            <X className="h-5 w-5" />
-            <span className="sr-only">Close</span>
-          </Button>
+
         </div>
         <div className="flex flex-col gap-1 p-4 h-[calc(100vh-4rem)] overflow-y-auto">
           {sidebarItems.map((item) =>

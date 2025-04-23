@@ -15,7 +15,7 @@ export default function DashboardPage() {
   // In a real application, this would come from an authentication system
   // For demo purposes, we'll use a cookie to simulate different roles
   const cookieStore = cookies()
-  const userRole = cookieStore.get("userRole")?.value || "qa"
+  const userRole = cookieStore.get("userRole")?.value 
 
   // Redirect to login if not authenticated
   // In a real app, this would check for a valid session
