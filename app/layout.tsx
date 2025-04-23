@@ -9,9 +9,8 @@ import { Header } from "@/components/header"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Construction Management System",
+  title: "Studio1:1 Construction Management System",
   description: "Manage construction projects, proposals, bills, expenses, and more",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
