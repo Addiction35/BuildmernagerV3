@@ -53,12 +53,12 @@ export function Header() {
 
       <Link href="/" className="hidden items-center gap-2 md:flex">
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-          <span className="text-lg font-bold text-primary-foreground">CP</span>
+          <span className="text-lg font-bold text-primary-foreground">S1</span>
         </div>
-        <span className="text-xl font-bold">ConstructPro</span>
+        <span className="text-xl font-bold">Studio1:1</span>
       </Link>
 
-      <div className="hidden md:flex md:flex-1">
+      <div className="hidden md:flex items-center justify-center  md:flex-1">
         <form className="relative w-full max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -115,11 +115,6 @@ export function Header() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <Button variant="outline" size="sm" className="hidden md:flex">
-          <Link href="/tasks/new">New Task</Link>
-        </Button>
-
         <ModeToggle />
         <UserNav />
       </div>

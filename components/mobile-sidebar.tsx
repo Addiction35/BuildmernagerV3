@@ -161,7 +161,7 @@ export function MobileSidebar() {
         <div className="flex h-16 items-center border-b px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setOpen(false)}>
             <Home className="h-6 w-6" />
-            <span className="text-lg font-bold">ConstructPro</span>
+            <span className="text-lg font-bold">Studio1:1</span>
           </Link>
           <Button variant="ghost" size="icon" className="ml-auto" onClick={() => setOpen(false)}>
             <X className="h-5 w-5" />

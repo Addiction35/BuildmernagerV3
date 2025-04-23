@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EstimateGroups } from "@/components/estimates/estimate-groups"
 import { EstimateSummary } from "@/components/estimates/estimate-summary"
 import type { Group, Section, Subsection, EstimateData } from "@/types/estimate"
+import { DownloadIcon } from "lucide-react"
 
 // Sample initial data
 const initialEstimateData: EstimateData = {
@@ -481,6 +482,10 @@ export function EstimateForm() {
           <h3 className="text-lg font-medium">Estimate Items</h3>
           <Button type="button" variant="outline" onClick={addGroup}>
             Add Group
+          </Button>
+          <Button variant="outline">
+            <DownloadIcon className="mr-2 h-4 w-4" />
+            Import excel
           </Button>
         </div>
 

@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
+import "../globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Sidebar } from "@/components/sidebar"
 import { Header } from "@/components/header"
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "Manage construction projects, proposals, bills, expenses, and more",
 }
 
-export default function RootLayout({
+export default function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode

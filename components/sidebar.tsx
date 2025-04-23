@@ -150,7 +150,7 @@ export function Sidebar() {
       <div className="flex h-16 items-center border-b px-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <Home className="h-6 w-6" />
-          <span className="text-lg font-bold">ConstructPro</span>
+          <span className="text-lg font-bold">Studio1:1</span>
         </Link>
       </div>
       <div className="flex flex-col gap-1 p-4 h-[calc(100vh-4rem)] overflow-y-auto">
