@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useForm, FormProvider } from "react-hook-form";
 import { ClientForm } from "@/components/clients/client-form"
