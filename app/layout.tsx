@@ -1,20 +1,24 @@
-import type React from "react"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-const RootLayout = ({ children }: { children: React.ReactNode }) => (
-  <html lang="en" suppressHydrationWarning>
-    <body>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <div className="flex min-h-screen flex-col">
-          <div className="flex flex-1">
-            <main className="flex-1 p-4 md:p-6 lg:p-8 w-full overflow-x-hidden">
-              {children}
-            </main>
-          </div>
-        </div>
-      </ThemeProvider>
-    </body>
-  </html>
-);
+// app/layout.tsx
+"use client"
 
-export default RootLayout;
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import './globals.css'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
+const queryClient = new QueryClient()
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+      <QueryClientProvider client={queryClient}>
+          {children}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </body>
+
+    </html>
+  )
+}

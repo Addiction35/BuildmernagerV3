@@ -1,36 +1,38 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "../globals.css"
+"use client"
+
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Sidebar } from "@/components/sidebar"
+import QueryProvider from "@/components/QueryProvider"
 import { Header } from "@/components/header"
+import { Sidebar } from "@/components/sidebar"
+import { useAuth } from "@/hooks/useAuth"
 
-const inter = Inter({ subsets: ["latin"] })
+const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter()
+  const { data, isLoading, isError } = useAuth()
 
-export const metadata: Metadata = {
-  title: "Studio1:1 Construction Management System",
-  description: "Manage construction projects, proposals, bills, expenses, and more",
-}
+  useEffect(() => {
+    if (isError) {
+      router.push("/login")
+    }
+  }, [isError, router])
 
-export default function AppLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+  if (isLoading) return null // Or a spinner
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <div className="flex flex-1">
-              <Sidebar />
-              <main className="flex-1 p-4 md:p-6 lg:p-8 w-full overflow-x-hidden">{children}</main>
-            </div>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <QueryProvider>
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <div className="flex flex-1">
+            <Sidebar />
+            <main className="flex-1 p-4 md:p-6 lg:p-8 w-full overflow-x-hidden">{children}</main>
           </div>
-        </ThemeProvider>
-      </body>
-    </html>
+        </div>
+      </QueryProvider>
+    </ThemeProvider>
   )
 }
+
+export default AppLayout

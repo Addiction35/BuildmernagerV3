@@ -1,4 +1,3 @@
-// app/(auth)/layout.tsx
 import '../globals.css'
 import { Inter } from 'next/font/google'
 
@@ -11,10 +10,9 @@ export const metadata = {
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        {children}
-      </body>
-    </html>
+    <div className={inter.className}>
+      {children}
+    </div>
   )
 }
+
