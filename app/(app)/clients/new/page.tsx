@@ -1,7 +1,13 @@
+"use client";
+
+import { useForm, FormProvider } from "react-hook-form";
 import { ClientForm } from "@/components/clients/client-form"
 
 export default function NewClientPage() {
+  const methods = useForm();
   return (
+    <>
+    <FormProvider {...methods}>
     <div className="container mx-auto py-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Add New Client</h1>
@@ -9,5 +15,7 @@ export default function NewClientPage() {
       </div>
       <ClientForm />
     </div>
+    </FormProvider>
+    </>
   )
 }
