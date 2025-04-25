@@ -5,6 +5,7 @@ import { UserDashboard } from '@/components/dashboard/user-dashboard'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+
 export default async function DashboardPage() {
   // Retrieve cookies
   const cookieStore = await cookies()
