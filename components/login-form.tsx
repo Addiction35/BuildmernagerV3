@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
+import Cookies from 'js-cookie';
 
 // Type definitions
 interface LoginFormProps extends React.ComponentProps<"div"> {
@@ -40,11 +41,11 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
     },
   });
 
-  const loginMutation = useMutation({
+const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/Login`,
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
           data,
           {
             withCredentials: true,
@@ -75,6 +76,9 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
     },
     onSuccess: (data) => {
       if (data) {
+        // Set the received token in a cookie
+        Cookies.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'Strict' });
+        
         toast({
           title: "Login successful",
           description: "Redirecting to dashboard...",
@@ -99,6 +103,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
       });
     },
   });
+
 
   // Form submission handler
   const onSubmit = (data: LoginFormData) => {
