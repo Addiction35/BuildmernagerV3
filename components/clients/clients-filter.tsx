@@ -12,9 +12,8 @@ export function ClientsFilter() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 flex items-center relative">
+        <div className="flex-1 flex items-center gap-2 relative">
           <Search className="absolute left-2.5 h-4 w-4 text-muted-foreground" />
-          <Input type="search" placeholder="Search clients..." />
           <Input type="search" placeholder="Search clients..." className="w-full pl-8" />
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
