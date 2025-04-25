@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Settings, User } from "lucide-react"
+import { useLogout } from "@/hooks/useLogout"
 
 interface UserNavProps {
   name: string
@@ -19,6 +20,7 @@ interface UserNavProps {
 }
 
 export function UserNav({ name, email, avatarUrl }: UserNavProps) {
+  const logoutMutation = useLogout();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -53,10 +55,15 @@ export function UserNav({ name, email, avatarUrl }: UserNavProps) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
-        </DropdownMenuItem>
+    <DropdownMenuItem
+      onClick={() => {
+        logoutMutation.mutate();
+      }}
+      className="cursor-pointer"
+    >
+      <LogOut className="mr-2 h-4 w-4" />
+      <span>Log out</span>
+    </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
