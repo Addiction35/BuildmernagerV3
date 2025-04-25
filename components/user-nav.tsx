@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Settings, User } from "lucide-react"
 
-
 export function UserNav() {
   return (
     <DropdownMenu>

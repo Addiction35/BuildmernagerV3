@@ -78,6 +78,7 @@ const loginMutation = useMutation({
       if (data) {
         // Set the received token in a cookie
         Cookies.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'Strict' });
+        Cookies.set("user_data", JSON.stringify(data.user), { expires: 7, secure: true, sameSite: "Strict" });
         
         toast({
           title: "Login successful",
