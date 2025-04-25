@@ -44,7 +44,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
     mutationFn: async (data: LoginFormData) => {
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/Login`,
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/Lzogin`,
           data,
           {
             withCredentials: true,
