@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState, useEffect } from "react"
 
-export function Header() {
+interface HeaderProps {
+  user: any  // Define the type of your user data (adjust based on your actual data)
+}
+export const Header = ({ user }: HeaderProps) => {
   const [notifications, setNotifications] = useState([
     { id: 1, title: "New project assigned", read: false, time: "5 min ago" },
     { id: 2, title: "Estimate approved", read: false, time: "1 hour ago" },
@@ -116,7 +119,11 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
         <ModeToggle />
-        <UserNav />
+             <UserNav
+            name={user.name}
+            email={user.email}
+            avatarUrl={user.avatarUrl} // Optional: If you have an avatar URL
+          />
       </div>
     </header>
   )
