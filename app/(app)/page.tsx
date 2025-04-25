@@ -5,27 +5,39 @@ import { AdminDashboard } from "@/components/dashboard/admin-dashboard"
 import { UserDashboard } from "@/components/dashboard/user-dashboard"
 import { ProjectManagerDashboard } from "@/components/dashboard/project-manager-dashboard"
 import { QADashboard } from "@/components/dashboard/qa-dashboard"
+import jwt from "jsonwebtoken"
 
 export const metadata: Metadata = {
   title: "Dashboard | Construction Management",
   description: "Construction Management Dashboard",
 }
 
-export default function DashboardPage() {
-  // In a real application, this would come from an authentication system
-  // For demo purposes, we'll use a cookie to simulate different roles
-  const cookieStore = cookies()
-  const userRole = cookieStore.get("userRole")?.value 
-
-  // Redirect to login if not authenticated
-  // In a real app, this would check for a valid session
-  const isAuthenticated = true
-  if (!isAuthenticated) {
+export default async function DashboardPage() {
+  const cookieStore = await cookies()  // Retrieve cookies
+  const token = cookieStore.get("auth_token")?.value  // Assuming your token is stored as 'auth_token'
+  console.log(token)
+  if (!token) {
+    // Redirect if the token is not found
     redirect("/login")
   }
 
-  // Render the appropriate dashboard based on user role
-  switch (userRole) {
+  let user: any
+  try {
+    // Verify and decode the token using the secret key
+    user = jwt.verify(token, process.env.JWT_SECRET!)
+  } catch (err) {
+    // Redirect if token is invalid or expired
+    console.error("Invalid token", err)
+    redirect("/login")
+  }
+
+  // Extract the role from the decoded JWT
+  const role = user.role
+
+  console.log("this is the role", role);
+
+  // Render the corresponding dashboard based on the role
+  switch (role) {
     case "admin":
       return <AdminDashboard />
     case "user":
@@ -35,6 +47,7 @@ export default function DashboardPage() {
     case "qa":
       return <QADashboard />
     default:
+      // Default to User Dashboard if the role is unknown
       return <UserDashboard />
   }
 }
