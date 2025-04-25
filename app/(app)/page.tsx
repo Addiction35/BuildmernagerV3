@@ -3,6 +3,7 @@ import { ProjectManagerDashboard } from '@/components/dashboard/project-manager-
 import { QADashboard } from '@/components/dashboard/qa-dashboard'
 import { UserDashboard } from '@/components/dashboard/user-dashboard'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export default async function DashboardPage() {
   // Retrieve cookies

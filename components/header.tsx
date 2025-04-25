@@ -119,11 +119,15 @@ export const Header = ({ user }: HeaderProps) => {
           </DropdownMenuContent>
         </DropdownMenu>
         <ModeToggle />
-             <UserNav
-            name={user.name}
-            email={user.email}
-            avatarUrl={user.avatarUrl} // Optional: If you have an avatar URL
-          />
+             {user ? (
+            <UserNav
+              name={user.name}
+              email={user.email}
+              avatarUrl={user.avatarUrl}
+            />
+          ) : (
+            <div className="text-sm italic text-gray-400">Loading user...</div>
+          )}
       </div>
     </header>
   )
