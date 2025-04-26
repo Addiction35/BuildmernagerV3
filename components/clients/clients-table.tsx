@@ -14,6 +14,7 @@ export function ClientsTable() {
   const { toast } = useToast()
   const { data: clients, isLoading } = useGetClients()
   //console.log("clients:", clients);
+  
 
   const deleteClient = useDeleteClient()
 
@@ -96,7 +97,11 @@ const handleDelete = (id: string) => {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-red-600 cursor-pointer"
-                        onClick={() => handleDelete(client._id)}
+                        onClick={() => {
+                          if (confirm(`Are you sure you want to delete "${project.name}"?`)) {
+                            deleteMutation.mutate(project._id)
+                          }
+                        }}
                       >
                         <Trash className="mr-2 h-4 w-4" />
                         Delete

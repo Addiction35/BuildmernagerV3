@@ -15,101 +15,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Edit, Eye, MoreHorizontal, Trash } from "lucide-react"
-
-const projects = [
-  {
-    id: "PRJ001",
-    name: "Riverside Apartments",
-    client: "Riverside Development LLC",
-    location: "123 River St, Riverside",
-    status: "In Progress",
-    value: "$1,250,000",
-    startDate: "2023-05-15",
-    endDate: "2024-08-30",
-    progress: "65%",
-  },
-  {
-    id: "PRJ002",
-    name: "Downtown Office Renovation",
-    client: "Metro Business Group",
-    location: "456 Main St, Downtown",
-    status: "Planning",
-    value: "$450,000",
-    startDate: "2023-07-10",
-    endDate: "2024-01-15",
-    progress: "15%",
-  },
-  {
-    id: "PRJ003",
-    name: "Hillside Residence",
-    client: "Johnson Family",
-    location: "789 Hill Rd, Hillside",
-    status: "In Progress",
-    value: "$780,000",
-    startDate: "2023-03-20",
-    endDate: "2024-02-28",
-    progress: "40%",
-  },
-  {
-    id: "PRJ004",
-    name: "Community Center",
-    client: "Oakville Municipality",
-    location: "101 Oak Ave, Oakville",
-    status: "Pending Approval",
-    value: "$2,100,000",
-    startDate: "2023-09-01",
-    endDate: "2025-03-31",
-    progress: "5%",
-  },
-  {
-    id: "PRJ005",
-    name: "Retail Store Fitout",
-    client: "Fashion Outlet Inc.",
-    location: "202 Mall Blvd, Shopville",
-    status: "Completed",
-    value: "$320,000",
-    startDate: "2023-01-10",
-    endDate: "2023-04-15",
-    progress: "100%",
-  },
-  {
-    id: "PRJ006",
-    name: "Industrial Warehouse",
-    client: "Logistics Pro LLC",
-    location: "303 Industrial Pkwy, Warehouse District",
-    status: "In Progress",
-    value: "$1,850,000",
-    startDate: "2023-04-05",
-    endDate: "2024-06-30",
-    progress: "55%",
-  },
-  {
-    id: "PRJ007",
-    name: "School Renovation",
-    client: "Westside School District",
-    location: "404 Education Blvd, Westside",
-    status: "Planning",
-    value: "$3,200,000",
-    startDate: "2023-11-15",
-    endDate: "2025-08-15",
-    progress: "10%",
-  },
-  {
-    id: "PRJ008",
-    name: "Medical Center",
-    client: "Healthcare Partners",
-    location: "505 Health Way, Northside",
-    status: "Pending Approval",
-    value: "$4,500,000",
-    startDate: "2024-01-10",
-    endDate: "2026-03-31",
-    progress: "2%",
-  },
-]
+import {  useProjects } from "@/lib/hooks/projectQueries"
 
 export function ProjectsTable() {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([])
 
+  const { data: projects, isLoading } = useProjects()
+console.log(projects);
   const toggleProject = (projectId: string) => {
     setSelectedProjects((prev) =>
       prev.includes(projectId) ? prev.filter((id) => id !== projectId) : [...prev, projectId],
@@ -119,7 +31,14 @@ export function ProjectsTable() {
   const toggleAll = () => {
     setSelectedProjects((prev) => (prev.length === projects.length ? [] : projects.map((project) => project.id)))
   }
+    if (isLoading) {
+      return <div>Loading...</div>
+    }
 
+  if (!projects || projects.length === 0) 
+  {
+    return <div>No projects available</div>;
+  }
   return (
     <div className="rounded-md border">
       <Table>
@@ -143,11 +62,11 @@ export function ProjectsTable() {
         </TableHeader>
         <TableBody>
           {projects.map((project) => (
-            <TableRow key={project.id}>
+            <TableRow key={project._id}>
               <TableCell>
                 <Checkbox
-                  checked={selectedProjects.includes(project.id)}
-                  onCheckedChange={() => toggleProject(project.id)}
+                  checked={selectedProjects.includes(project._id)}
+                  onCheckedChange={() => toggleProject(project._id)}
                   aria-label={`Select ${project.name}`}
                 />
               </TableCell>
@@ -155,7 +74,7 @@ export function ProjectsTable() {
                 <div className="font-medium">{project.name}</div>
                 <div className="text-xs text-muted-foreground">{project.location}</div>
               </TableCell>
-              <TableCell>{project.client}</TableCell>
+              <TableCell>{project.client?.primaryContact}</TableCell>
               <TableCell>
                 <Badge
                   variant={
@@ -197,11 +116,11 @@ export function ProjectsTable() {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
                       <Eye className="mr-2 h-4 w-4" />
-                      <Link href={`/projects/${project.id}`}>View Details</Link>
+                      <Link href={`/projects/${project._id}`}>View Details</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Edit className="mr-2 h-4 w-4" />
-                      <Link href={`/projects/${project.id}/edit`}>Edit Project</Link>
+                      <Link href={`/projects/${project._id}/edit`}>Edit Project</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-destructive">
