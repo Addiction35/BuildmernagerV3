@@ -1,16 +1,18 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import Cookies from "js-cookie"
 import { ThemeProvider } from "@/components/theme-provider"
 import QueryProvider from "@/components/QueryProvider"
 import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { QueryClient } from "@tanstack/react-query"
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null)  // State to store user data
 
+const queryClient = new QueryClient()
   useEffect(() => {
     // Fetch user data from cookies (or your preferred storage method)
     const userData = Cookies.get("user_data")
@@ -31,6 +33,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             <main className="flex-1 p-4 md:p-6 lg:p-8 w-full overflow-x-hidden">{children}</main>
           </div>
         </div>
+         <ReactQueryDevtools initialIsOpen={false} />
       </QueryProvider>
     </ThemeProvider>
   )
