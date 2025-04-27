@@ -7,64 +7,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { MoreHorizontal, ExternalLink, Edit, Trash } from "lucide-react"
-
-// Sample data - in a real app, this would come from an API
-const vendors = [
-  {
-    id: "V001",
-    name: "ABC Building Supplies",
-    category: "Building Materials",
-    contact: "John Smith",
-    email: "john@abcbuilding.com",
-    phone: "(555) 123-4567",
-    status: "Active",
-    lastOrder: "2023-04-15",
-  },
-  {
-    id: "V002",
-    name: "XYZ Electrical",
-    category: "Electrical",
-    contact: "Jane Doe",
-    email: "jane@xyzelectrical.com",
-    phone: "(555) 234-5678",
-    status: "Active",
-    lastOrder: "2023-04-10",
-  },
-  {
-    id: "V003",
-    name: "Plumbing Plus",
-    category: "Plumbing",
-    contact: "Mike Johnson",
-    email: "mike@plumbingplus.com",
-    phone: "(555) 345-6789",
-    status: "Inactive",
-    lastOrder: "2023-03-22",
-  },
-  {
-    id: "V004",
-    name: "Steel Works Inc",
-    category: "Structural",
-    contact: "Sarah Williams",
-    email: "sarah@steelworks.com",
-    phone: "(555) 456-7890",
-    status: "Active",
-    lastOrder: "2023-04-18",
-  },
-  {
-    id: "V005",
-    name: "Glass & Windows Co",
-    category: "Windows & Glass",
-    contact: "Robert Brown",
-    email: "robert@glasswindows.com",
-    phone: "(555) 567-8901",
-    status: "Active",
-    lastOrder: "2023-04-05",
-  },
-]
+import { useVendors } from "@/lib/hooks/vendorQueries"
 
 export function VendorsTable() {
-  const [data, setData] = useState(vendors)
 
+  const { data: vendors, isLoading } = useVendors()
+  console.log(vendors);
+    if (isLoading) {
+      return <div>Loading...</div>
+    }
+
+  if (!vendors|| vendors.length === 0) 
+  {
+    return <div>No projects available</div>;
+  }
   return (
     <div className="rounded-md border">
       <Table>
@@ -75,17 +31,17 @@ export function VendorsTable() {
             <TableHead>Category</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Last Order</TableHead>
+            <TableHead>Vendor address</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((vendor) => (
+          {vendors.map((vendor) => (
             <TableRow key={vendor.id}>
-              <TableCell>{vendor.id}</TableCell>
+              <TableCell>{vendor.vendorId}</TableCell>
               <TableCell>
-                <Link href={`/vendors/${vendor.id}`} className="font-medium hover:underline">
-                  {vendor.name}
+                <Link href={`/vendors/${vendor._id}`} className="font-medium hover:underline">
+                  {vendor.companyName}
                 </Link>
               </TableCell>
               <TableCell>{vendor.category}</TableCell>
@@ -96,7 +52,7 @@ export function VendorsTable() {
               <TableCell>
                 <Badge variant={vendor.status === "Active" ? "default" : "secondary"}>{vendor.status}</Badge>
               </TableCell>
-              <TableCell>{new Date(vendor.lastOrder).toLocaleDateString()}</TableCell>
+              <TableCell>{vendor.address}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -107,13 +63,13 @@ export function VendorsTable() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>
-                      <Link href={`/vendors/${vendor.id}`} className="flex w-full items-center">
+                      <Link href={`/vendors/${vendor._id}`} className="flex w-full items-center">
                         <ExternalLink className="mr-2 h-4 w-4" />
                         View
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Link href={`/vendors/${vendor.id}/edit`} className="flex w-full items-center">
+                      <Link href={`/vendors/${vendor._id}/edit`} className="flex w-full items-center">
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </Link>

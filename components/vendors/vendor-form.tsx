@@ -1,136 +1,235 @@
 "use client"
-
 import type React from "react"
 import { useRouter } from "next/navigation"
-
+import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { FormLabel } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
+import { useForm, Controller, FormProvider, SubmitHandler } from "react-hook-form"
+
+
+import { useCreateVendor } from "@/lib/hooks/vendorQueries"
+
+interface VendorFormData {
+  companyName: string
+  category: string
+  contactPerson: string
+  email: string
+  phone: string
+  website: string
+  address: string
+  city: string
+  state: string
+  zipCode: string
+  taxId: string
+  paymentTerms: string
+  notes: string
+}
 
 export function VendorForm() {
   const router = useRouter()
 
-  const onSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
+  // Using the imported addVendor mutation
+  const { mutate, isLoading, isError, isSuccess } = useCreateVendor();
+  // React Hook Form setup
+  const methods = useForm<VendorFormData>({
+    defaultValues: {
+      companyName: "",
+      category: "",
+      contactPerson: "",
+      email: "",
+      phone: "",
+      website: "",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      taxId: "",
+      paymentTerms: "",
+      notes: "",
+    },
+  })
 
-    // In a real app, you would submit the form data to your API
-    toast({
-      title: "Vendor added",
-      description: "The vendor has been added successfully.",
-    })
+  const { handleSubmit, control } = methods
 
-    // Redirect to vendors page
-    router.push("/vendors")
-  }
+const onSubmit = (data) => {
+  console.log(data)
+  mutate(data, {
+    onSuccess: () => {
+      toast.success("Vendor created successfully!");
+      setTimeout(() => {
+        router.push("/vendors");
+      }, 1500); // Wait for 1.5 seconds (1500ms) before redirecting
+    },
+    onError: (error) => {
+      toast.error("Failed to create Vendor. Please try again.");
+      console.error("Error creating Vendor:", error);
+    }
+  });
+};
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Vendor Information</CardTitle>
-      </CardHeader>
-      <form onSubmit={onSubmit}>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <FormLabel htmlFor="companyName">Company Name</FormLabel>
-                <Input id="companyName" placeholder="Enter company name" required />
+    <FormProvider {...methods}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Vendor Information</CardTitle>
+        </CardHeader>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="companyName">Company Name</FormLabel>
+                  <Controller
+                    name="companyName"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="companyName" placeholder="Enter company name" required />}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="category">Vendor Category</FormLabel>
+                <Controller
+                  name="category"
+                  control={control}
+                  render={({ field }) => <Input {...field} id="address" placeholder="Enter Vendor Category" />}
+                />
+                </div>
               </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="contactPerson">Primary Contact</FormLabel>
+                  <Controller
+                    name="contactPerson"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="contactPerson" placeholder="Enter contact person name" />}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="email">Email Address</FormLabel>
+                  <Controller
+                    name="email"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="email" type="email" placeholder="Enter email address" required />}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="phone">Phone Number</FormLabel>
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="phone" placeholder="Enter phone number" />}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="website">Website</FormLabel>
+                  <Controller
+                    name="website"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="website" placeholder="Enter website URL" />}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <FormLabel htmlFor="vendorType">Vendor Type</FormLabel>
-                <Select>
-                  <SelectTrigger id="vendorType">
-                    <SelectValue placeholder="Select vendor type" />
+                <FormLabel htmlFor="address">Address</FormLabel>
+                <Controller
+                  name="address"
+                  control={control}
+                  render={({ field }) => <Textarea {...field} id="address" placeholder="Enter full address" />}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <FormLabel htmlFor="city">City</FormLabel>
+                  <Controller
+                    name="city"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="city" placeholder="Enter city" />}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="state">State/Province</FormLabel>
+                  <Controller
+                    name="state"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="state" placeholder="Enter state/province" />}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <FormLabel htmlFor="zipCode">Zip/Postal Code</FormLabel>
+                  <Controller
+                    name="zipCode"
+                    control={control}
+                    render={({ field }) => <Input {...field} id="zipCode" placeholder="Enter zip/postal code" />}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <FormLabel htmlFor="taxId">Tax ID / Business Number</FormLabel>
+                <Controller
+                  name="taxId"
+                  control={control}
+                  render={({ field }) => <Input {...field} id="taxId" placeholder="Enter tax ID or business number" />}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <FormLabel htmlFor="paymentTerms">Payment Terms</FormLabel>
+            <Controller
+              name="paymentTerms"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger id="paymentTerms" className="w-full">
+                    <SelectValue placeholder="Select payment terms" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="supplier">Supplier</SelectItem>
-                    <SelectItem value="contractor">Contractor</SelectItem>
-                    <SelectItem value="consultant">Consultant</SelectItem>
-                    <SelectItem value="service">Service Provider</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="net15">Mobile Money</SelectItem>
+                    <SelectItem value="net30">Cheque</SelectItem>
+                    <SelectItem value="net45">Net 45</SelectItem>
+                    <SelectItem value="net60">Net 60</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              )}
+            />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <FormLabel htmlFor="contactPerson">Primary Contact</FormLabel>
-                <Input id="contactPerson" placeholder="Enter contact person name" />
-              </div>
-              <div className="space-y-2">
-                <FormLabel htmlFor="email">Email Address</FormLabel>
-                <Input id="email" type="email" placeholder="Enter email address" required />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <FormLabel htmlFor="phone">Phone Number</FormLabel>
-                <Input id="phone" placeholder="Enter phone number" />
               </div>
-              <div className="space-y-2">
-                <FormLabel htmlFor="website">Website</FormLabel>
-                <Input id="website" placeholder="Enter website URL" />
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <FormLabel htmlFor="address">Address</FormLabel>
-              <Textarea id="address" placeholder="Enter full address" />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <FormLabel htmlFor="city">City</FormLabel>
-                <Input id="city" placeholder="Enter city" />
-              </div>
-              <div className="space-y-2">
-                <FormLabel htmlFor="state">State/Province</FormLabel>
-                <Input id="state" placeholder="Enter state/province" />
-              </div>
-              <div className="space-y-2">
-                <FormLabel htmlFor="zipCode">Zip/Postal Code</FormLabel>
-                <Input id="zipCode" placeholder="Enter zip/postal code" />
+                <FormLabel htmlFor="notes">Notes</FormLabel>
+                <Controller
+                  name="notes"
+                  control={control}
+                  render={({ field }) => <Textarea {...field} id="notes" placeholder="Enter additional notes" className="min-h-[100px]" />}
+                />
               </div>
             </div>
-
-            <div className="space-y-2">
-              <FormLabel htmlFor="taxId">Tax ID / Business Number</FormLabel>
-              <Input id="taxId" placeholder="Enter tax ID or business number" />
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel htmlFor="paymentTerms">Payment Terms</FormLabel>
-              <Select>
-                <SelectTrigger id="paymentTerms">
-                  <SelectValue placeholder="Select payment terms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="net15">Net 15</SelectItem>
-                  <SelectItem value="net30">Net 30</SelectItem>
-                  <SelectItem value="net45">Net 45</SelectItem>
-                  <SelectItem value="net60">Net 60</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel htmlFor="notes">Notes</FormLabel>
-              <Textarea id="notes" placeholder="Enter additional notes" className="min-h-[100px]" />
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          <Button type="submit">Add Vendor</Button>
-        </CardFooter>
-      </form>
-    </Card>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => router.back()}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Adding Vendor..." : "Add Vendor"}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </FormProvider>
   )
 }
