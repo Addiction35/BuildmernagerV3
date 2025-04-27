@@ -1,5 +1,5 @@
 "use client"
-
+import { Toaster } from 'react-hot-toast'
 import { useEffect, useState } from "react"
 import Cookies from "js-cookie"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -33,6 +33,7 @@ const queryClient = new QueryClient()
             <main className="flex-1 p-4 md:p-6 lg:p-8 w-full overflow-x-hidden">{children}</main>
           </div>
         </div>
+        <Toaster position="top-right" reverseOrder={false} />
          <ReactQueryDevtools initialIsOpen={false} />
       </QueryProvider>
     </ThemeProvider>

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,8 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCreateProject } from "@/lib/hooks/projectQueries"
 import { Controller, useForm } from "react-hook-form"
+import { toast } from "react-hot-toast";
+
 
 export function ProjectForm() {
+  const router = useRouter()
   const { mutate, isLoading, isError, isSuccess } = useCreateProject();
 
   const { control, handleSubmit, formState: { errors }, setValue } = useForm({
@@ -38,12 +41,23 @@ export function ProjectForm() {
     },
   });
 
-  const onSubmit = (data) => {
-    console.log(data)
-    mutate(data);  // Pass form data to mutation function
-  };
+const onSubmit = (data) => {
+  mutate(data, {
+    onSuccess: () => {
+      toast.success("Project created successfully! 🚀");
+      setTimeout(() => {
+        router.push("/projects");
+      }, 1500); // Wait for 1.5 seconds (1500ms) before redirecting
+    },
+    onError: (error) => {
+      toast.error("Failed to create project. Please try again.");
+      console.error("Error creating project:", error);
+    }
+  });
+};
 
-  const router = useRouter()
+
+  
   
 
   return (
@@ -87,9 +101,8 @@ export function ProjectForm() {
             <Controller
               name="status"
               control={control}
-              defaultValue="planning"  // Default value for the status
               render={({ field }) => (
-                <Select {...field} value={field.value} onChange={field.onChange}>
+                <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -102,6 +115,7 @@ export function ProjectForm() {
                 </Select>
               )}
             />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="start-date">Start Date</Label>
@@ -146,9 +160,8 @@ export function ProjectForm() {
             <Controller
               name="type"
               control={control}
-              defaultValue="residential" // Default value
               render={({ field }) => (
-                <Select {...field}>
+                <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="type">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
@@ -161,6 +174,7 @@ export function ProjectForm() {
                 </Select>
               )}
             />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="manager">Project Manager</Label>
@@ -198,9 +212,9 @@ export function ProjectForm() {
                   <div className="space-y-2">
                     <Label htmlFor="contact-role">Role</Label>
                     <Controller
-                      name="contactName"
+                      name="contactRole"
                       control={control}
-                      render={({ field }) => <Input id="contact-name" {...field} placeholder="Enter contact name" />}
+                      render={({ field }) => <Input id="contact-role" {...field} placeholder="Enter contact name" />}
                     />
                   </div>
                   <div className="space-y-2">
