@@ -241,9 +241,9 @@ export function ClientForm() {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => router.back()}>
-            Cancel
-          </Button>
+            <Button type="button" variant="outline" onClick={() => router.back()}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Submitting..." : "Add Client"}
             </Button>

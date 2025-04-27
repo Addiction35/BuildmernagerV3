@@ -12,24 +12,42 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
+import { useCreateProject } from "@/lib/hooks/projectQueries"
+import { Controller, useForm } from "react-hook-form"
 
 export function ProjectForm() {
+  const { mutate, isLoading, isError, isSuccess } = useCreateProject();
+
+  const { control, handleSubmit, formState: { errors }, setValue } = useForm({
+    defaultValues: {
+      name: '',
+      client: '',
+      location: '',
+      status: '',
+      startDate: '',
+      endDate: '',
+      description: '',
+      value: '',
+      type: '',
+      manager: '',
+      supervisor: '',
+      contactName: '',
+      contactRole: '',
+      contactEmail: '',
+      contactPhone: '',
+    },
+  });
+
+  const onSubmit = (data) => {
+    console.log(data)
+    mutate(data);  // Pass form data to mutation function
+  };
+
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Redirect to projects page
-    router.push("/projects")
-  }
+  
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general">General</TabsTrigger>
@@ -42,41 +60,72 @@ export function ProjectForm() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Project Name</Label>
-              <Input id="name" placeholder="Enter project name" required />
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => <Input id="name" {...field} placeholder="Enter project name" required />}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="client">Client</Label>
-              <Input id="client" placeholder="Enter client name" required />
+              <Controller
+                name="client"
+                control={control}
+                render={({ field }) => <Input id="client" {...field} placeholder="Enter client name" required />}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="location">Location</Label>
-              <Input id="location" placeholder="Enter project location" required />
+              <Controller
+                name="location"
+                control={control}
+                render={({ field }) => <Input id="location" {...field} placeholder="Enter project location" required />}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select defaultValue="planning">
-                <SelectTrigger id="status">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="planning">Planning</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="on-hold">On Hold</SelectItem>
-                </SelectContent>
-              </Select>
+            <Controller
+              name="status"
+              control={control}
+              defaultValue="planning"  // Default value for the status
+              render={({ field }) => (
+                <Select {...field} value={field.value} onChange={field.onChange}>
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planning">Planning</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="on-hold">On Hold</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
             </div>
             <div className="space-y-2">
               <Label htmlFor="start-date">Start Date</Label>
-              <DatePicker />
+              <Controller
+                name="startDate"
+                control={control}
+                render={({ field }) => <DatePicker {...field} />}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="end-date">End Date</Label>
-              <DatePicker />
+              <Controller
+                name="endDate"
+                control={control}
+                render={({ field }) => <DatePicker {...field} />}
+              />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Enter project description" className="min-h-32" />
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => <Textarea id="description" {...field} placeholder="Enter project description" className="min-h-32" />}
+              />
             </div>
           </div>
         </TabsContent>
@@ -85,29 +134,49 @@ export function ProjectForm() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="value">Project Value</Label>
-              <Input id="value" placeholder="Enter project value" type="number" />
+              <Controller
+                name="value"
+                control={control}
+                render={({ field }) => <Input id="value" type="number" {...field} placeholder="Enter project value" />}
+              />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="type">Project Type</Label>
-              <Select defaultValue="residential">
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="residential">Residential</SelectItem>
-                  <SelectItem value="commercial">Commercial</SelectItem>
-                  <SelectItem value="industrial">Industrial</SelectItem>
-                  <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                </SelectContent>
-              </Select>
+            <Controller
+              name="type"
+              control={control}
+              defaultValue="residential" // Default value
+              render={({ field }) => (
+                <Select {...field}>
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="residential">Residential</SelectItem>
+                    <SelectItem value="commercial">Commercial</SelectItem>
+                    <SelectItem value="industrial">Industrial</SelectItem>
+                    <SelectItem value="infrastructure">Infrastructure</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
             </div>
             <div className="space-y-2">
               <Label htmlFor="manager">Project Manager</Label>
-              <Input id="manager" placeholder="Enter project manager" />
+              <Controller
+                name="manager"
+                control={control}
+                render={({ field }) => <Input id="manager" {...field} placeholder="Enter project manager" />}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="supervisor">Site Supervisor</Label>
-              <Input id="supervisor" placeholder="Enter site supervisor" />
+              <Controller
+                name="supervisor"
+                control={control}
+                render={({ field }) => <Input id="supervisor" {...field} placeholder="Enter site supervisor" />}
+              />
             </div>
           </div>
         </TabsContent>
@@ -120,19 +189,35 @@ export function ProjectForm() {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="contact-name">Name</Label>
-                    <Input id="contact-name" placeholder="Enter contact name" />
+                    <Controller
+                      name="contactName"
+                      control={control}
+                      render={({ field }) => <Input id="contact-name" {...field} placeholder="Enter contact name" />}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contact-role">Role</Label>
-                    <Input id="contact-role" placeholder="Enter contact role" />
+                    <Controller
+                      name="contactName"
+                      control={control}
+                      render={({ field }) => <Input id="contact-name" {...field} placeholder="Enter contact name" />}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contact-email">Email</Label>
-                    <Input id="contact-email" type="email" placeholder="Enter contact email" />
+                    <Controller
+                      name="contactEmail"
+                      control={control}
+                      render={({ field }) => <Input id="contact-email" type="email" {...field} placeholder="Enter contact email" />}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contact-phone">Phone</Label>
-                    <Input id="contact-phone" placeholder="Enter contact phone" />
+                    <Controller
+                      name="contactPhone"
+                      control={control}
+                      render={({ field }) => <Input id="contact-phone" {...field} placeholder="Enter contact phone" />}
+                    />
                   </div>
                 </div>
               </div>
@@ -160,8 +245,8 @@ export function ProjectForm() {
         <Button type="button" variant="outline" onClick={() => router.push("/projects")}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Create Project"}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create Project"}
         </Button>
       </div>
     </form>
