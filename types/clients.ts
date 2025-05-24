@@ -27,7 +27,7 @@ export type ClientFormData = {
 export type Client = {
   id: string
   name: string
-  type: "Individual" | "Company" | "Organization" // or whatever values you support
+  type: "Individual" | "Company" | "Organization" 
   contact: string
   email: string
   status: "Active" | "Inactive"
