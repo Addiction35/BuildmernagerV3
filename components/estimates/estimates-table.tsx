@@ -29,17 +29,6 @@ const estimates = [
     convertedToProposal: true,
   },
   {
-    id: "EST002",
-    name: "Downtown Office - Renovation Estimate",
-    project: "Downtown Office Renovation",
-    projectId: "PRJ002",
-    client: "Metro Business Group",
-    date: "2023-06-15",
-    status: "Pending",
-    amount: "$450,000",
-    convertedToProposal: false,
-  },
-  {
     id: "EST003",
     name: "Hillside Residence - Construction Estimate",
     project: "Hillside Residence",
