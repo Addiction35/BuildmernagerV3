@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
+import { TooltipPortal } from "@radix-ui/react-tooltip"
 
 interface EstimateSummaryProps {
   total: number
@@ -21,16 +22,16 @@ export function EstimateSummary({ total }: EstimateSummaryProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span>Subtotal</span>
-              <span>${total.toLocaleString()}</span>
+              <span>${TooltipPortal}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span>Tax (10%)</span>
-              <span>${taxAmount.toLocaleString()}</span>
+              <span>${taxAmount}</span>
             </div>
             <div className="border-t pt-2 mt-2">
               <div className="flex items-center justify-between font-medium">
                 <span>Total</span>
-                <span>${grandTotal.toLocaleString()}</span>
+                <span>${grandTotal}</span>
               </div>
             </div>
           </div>

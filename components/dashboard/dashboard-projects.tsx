@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -11,9 +11,10 @@ interface DashboardProjectsProps {
   extended?: boolean
 }
 
-const { data: projects, isLoading: loadProjects } = useProjects()
+
 
 export function DashboardProjects({ extended = false }: DashboardProjectsProps) {
+  const { data: projects, isLoading: loadProjects } = useProjects()
   const displayProjects = extended ? projects : projects.slice(0, 5)
 
   return (

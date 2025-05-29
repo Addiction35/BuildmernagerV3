@@ -11,6 +11,22 @@ import { EstimateSubsections } from "@/components/estimates/estimate-subsections
 import type { Section, Subsection } from "@/types/estimate"
 import { ChevronDown, ChevronUp, Trash } from "lucide-react"
 
+const handleSectionChange = (sectionId: string, field: string, value: string | number) => {
+  const section = sections.find((s) => s.id === sectionId)
+  if (!section) return
+
+  const updatedSection = { ...section, [field]: value }
+
+  if (field === "quantity" || field === "rate") {
+    const quantity = field === "quantity" ? Number(value) : Number(section.quantity)
+    const rate = field === "rate" ? Number(value) : Number(section.rate)
+    updatedSection.amount = quantity * rate
+  }
+
+  onUpdateSection(updatedSection)
+}
+
+
 interface EstimateSectionsProps {
   groupId: string
   sections: Section[]
@@ -54,11 +70,9 @@ export function EstimateSections({
     onUpdateSection(updatedSection)
   }
 
-  const unitOptions = ["LS", "EA", "SF", "SY", "LF", "CY", "DAY", "HR"]
-
   return (
     <div className="space-y-4 pl-6 border-l-2 border-muted">
-      {sections.map((section) => (
+      {sections?.map((section) => (
         <Card key={section.id} className="overflow-hidden">
           <div className="flex items-center justify-between bg-muted/50 p-4">
             <div className="flex items-center gap-2">
@@ -124,24 +138,17 @@ export function EstimateSections({
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor={`section-${section.id}-unit`}>Unit</Label>
-                  <Select
-                    value={section.unit}
-                    onValueChange={(value) => handleSectionChange(section.id, "unit", value)}
-                  >
-                    <SelectTrigger id={`section-${section.id}-unit`}>
-                      <SelectValue placeholder="Select unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {unitOptions.map((unit) => (
-                        <SelectItem key={unit} value={unit}>
-                          {unit}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor={`section-${section.id}-unit`}>Unit</Label>
+                <input
+                  id={`section-${section.id}-unit`}
+                  type="text"
+                  value={section.unit}
+                  onChange={(e) =>  handleSectionChange(section.id, "unit", e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                />
+              </div>
+
 
                 <div className="space-y-2">
                   <Label htmlFor={`section-${section.id}-rate`}>Rate</Label>
@@ -165,7 +172,7 @@ export function EstimateSections({
                 </Button>
               </div>
 
-              {section.subsections.length > 0 && (
+              {section.subsections?.length > 0 && (
                 <div className="mt-4">
                   <EstimateSubsections
                     sectionId={section.id}
@@ -180,7 +187,7 @@ export function EstimateSections({
         </Card>
       ))}
 
-      {sections.length === 0 && (
+      {sections?.length === 0 && (
         <div className="rounded-md border border-dashed p-6 text-center">
           <p className="text-muted-foreground">No sections added yet. Click "Add Section" to get started.</p>
         </div>

@@ -28,60 +28,22 @@ const initialEstimateData: EstimateData = {
   status: "Draft",
   description: "",
   notes: "",
-  groups: [
-    {
-      id: "group-1",
-      code: "A",
-      name: "Site Preparation",
-      description: "All site preparation activities",
-      quantity: 1,
-      unit: "LS",
-      rate: 0,
-      amount: 0,
-      sections: [
-        {
-          id: "section-1",
-          code: "A.1",
-          name: "Demolition",
-          description: "Demolition of existing structures",
-          quantity: 1,
-          unit: "LS",
-          rate: 0,
-          amount: 0,
-          subsections: [
-            {
-              id: "subsection-1",
-              code: "A.1.1",
-              name: "Building Demolition",
-              description: "Demolition of main building",
-              quantity: 1,
-              unit: "LS",
-              rate: 5000,
-              amount: 5000,
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  groups: [],
 }
-
-// Sample projects for dropdown
-const { data: projects, isLoading: loadProjects } = useProjects()
-
- const { data: clients, isLoading } = useGetClients()
 
 export function EstimateForm() {
   const router = useRouter()
   const [estimateData, setEstimateData] = useState<EstimateData>(initialEstimateData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  const { data: projects, isLoading: loadProjects } = useProjects()
+ const { data: clients, isLoading } = useGetClients()
 
   // Calculate totals for the entire estimate
   const calculateEstimateTotal = () => {
-    return estimateData.groups.reduce((total, group) => {
-      const groupTotal = group.sections.reduce((sectionTotal, section) => {
-        const sectionSum = section.subsections.reduce((subsectionTotal, subsection) => {
+    return estimateData.groups?.reduce((total, group) => {
+      const groupTotal = group.sections?.reduce((sectionTotal, section) => {
+        const sectionSum = section.subsections?.reduce((subsectionTotal, subsection) => {
           return subsectionTotal + subsection.amount
         }, 0)
 
@@ -380,7 +342,7 @@ export function EstimateForm() {
     // We keep the current estimate metadata but replace the groups
     setEstimateData({
       ...estimateData,
-      groups: importedData.groups,
+      groups: importedData,
     })
   }
 
@@ -438,8 +400,8 @@ export function EstimateForm() {
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
+                {projects?.map((project) => (
+                  <SelectItem key={project._id} value={project._id}>
                     {project.name}
                   </SelectItem>
                 ))}
@@ -454,9 +416,9 @@ export function EstimateForm() {
                 <SelectValue placeholder="Select a client" />
               </SelectTrigger>
               <SelectContent>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
+                {clients?.map((client) => (
+                  <SelectItem key={client._id} value={client._id}>
+                    {client.companyName}
                   </SelectItem>
                 ))}
               </SelectContent>

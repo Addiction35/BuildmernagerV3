@@ -6,100 +6,16 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Eye } from "lucide-react"
+import { useTask, useTasks } from "@/lib/hooks/taskQueries"
 
 interface DashboardTasksProps {
   limit?: number
   extended?: boolean
 }
 
-const tasks = [
-  {
-    id: "TASK001",
-    title: "Complete foundation inspection",
-    projectId: "PRJ001",
-    project: "Riverside Apartments",
-    assignedTo: {
-      name: "John Smith",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "JS",
-    },
-    status: "Completed",
-    priority: "High",
-    dueDate: "2023-06-15",
-  },
-  {
-    id: "TASK002",
-    title: "Order electrical supplies",
-    projectId: "PRJ001",
-    project: "Riverside Apartments",
-    assignedTo: {
-      name: "Sarah Johnson",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "SJ",
-    },
-    status: "In Progress",
-    priority: "Medium",
-    dueDate: "2023-06-20",
-  },
-  {
-    id: "TASK003",
-    title: "Schedule plumbing subcontractor",
-    projectId: "PRJ002",
-    project: "Downtown Office Renovation",
-    assignedTo: {
-      name: "Michael Chen",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "MC",
-    },
-    status: "Not Started",
-    priority: "High",
-    dueDate: "2023-06-25",
-  },
-  {
-    id: "TASK004",
-    title: "Review architectural changes",
-    projectId: "PRJ003",
-    project: "Hillside Residence",
-    assignedTo: {
-      name: "Emily Rodriguez",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "ER",
-    },
-    status: "On Hold",
-    priority: "Medium",
-    dueDate: "2023-06-18",
-  },
-  {
-    id: "TASK005",
-    title: "Prepare progress report",
-    projectId: "PRJ001",
-    project: "Riverside Apartments",
-    assignedTo: {
-      name: "John Smith",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "JS",
-    },
-    status: "In Progress",
-    priority: "High",
-    dueDate: "2023-06-30",
-  },
-  {
-    id: "TASK006",
-    title: "Finalize material selections",
-    projectId: "PRJ004",
-    project: "Community Center",
-    assignedTo: {
-      name: "Sarah Johnson",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "SJ",
-    },
-    status: "Not Started",
-    priority: "Low",
-    dueDate: "2023-07-05",
-  },
-]
-
 export function DashboardTasks({ limit, extended = false }: DashboardTasksProps) {
+  const { data: tasks, isLoading: loadProjects } = useTasks()
+
   const displayTasks = limit ? tasks.slice(0, limit) : tasks
 
   return (

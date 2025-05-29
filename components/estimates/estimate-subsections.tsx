@@ -42,7 +42,7 @@ export function EstimateSubsections({
 
   return (
     <div className="space-y-4 pl-6 border-l-2 border-muted">
-      {subsections.map((subsection) => (
+      {subsections?.map((subsection) => (
         <Card key={subsection.id} className="overflow-hidden">
           <div className="flex items-center justify-between bg-muted/30 p-4">
             <div className="font-medium">
@@ -100,21 +100,13 @@ export function EstimateSubsections({
 
               <div className="space-y-2">
                 <Label htmlFor={`subsection-${subsection.id}-unit`}>Unit</Label>
-                <Select
+                <input
+                  id={`subsection-${subsection.id}-unit`}
+                  type="text"
                   value={subsection.unit}
-                  onValueChange={(value) => handleSubsectionChange(subsection.id, "unit", value)}
-                >
-                  <SelectTrigger id={`subsection-${subsection.id}-unit`}>
-                    <SelectValue placeholder="Select unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {unitOptions.map((unit) => (
-                      <SelectItem key={unit} value={unit}>
-                        {unit}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(e) => handleSubSectionChange(subsection.id, "unit", e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                />
               </div>
 
               <div className="space-y-2">
@@ -136,7 +128,7 @@ export function EstimateSubsections({
         </Card>
       ))}
 
-      {subsections.length === 0 && (
+      {subsections?.length === 0 && (
         <div className="rounded-md border border-dashed p-6 text-center">
           <p className="text-muted-foreground">No subsections added yet. Click "Add Subsection" to get started.</p>
         </div>

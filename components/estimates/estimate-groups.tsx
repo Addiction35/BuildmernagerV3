@@ -60,7 +60,7 @@ export function EstimateGroups({
 
   return (
     <div className="space-y-4">
-      {groups.map((group) => (
+      {groups?.map((group) => (
         <Card key={group.id} className="overflow-hidden">
           <div className="flex items-center justify-between bg-muted p-4">
             <div className="flex items-center gap-2">
@@ -126,21 +126,17 @@ export function EstimateGroups({
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor={`group-${group.id}-unit`}>Unit</Label>
-                  <Select value={group.unit} onValueChange={(value) => handleGroupChange(group.id, "unit", value)}>
-                    <SelectTrigger id={`group-${group.id}-unit`}>
-                      <SelectValue placeholder="Select unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {unitOptions.map((unit) => (
-                        <SelectItem key={unit} value={unit}>
-                          {unit}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+        <div className="space-y-2">
+          <Label htmlFor={`group-${group.id}-unit`}>Unit</Label>
+          <input
+            id={`group-${group.id}-unit`}
+            type="text"
+            value={group.unit}
+            onChange={(e) => handleGroupChange(group.id, "unit", e.target.value)}
+            className="w-full px-3 py-2 border rounded"
+          />
+        </div>
+
 
                 <div className="space-y-2">
                   <Label htmlFor={`group-${group.id}-rate`}>Rate</Label>
@@ -184,7 +180,7 @@ export function EstimateGroups({
         </Card>
       ))}
 
-      {groups.length === 0 && (
+      {groups?.length === 0 && (
         <div className="rounded-md border border-dashed p-8 text-center">
           <p className="text-muted-foreground">No groups added yet. Click "Add Group" to get started.</p>
         </div>
