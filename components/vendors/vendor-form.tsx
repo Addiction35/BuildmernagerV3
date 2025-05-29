@@ -82,7 +82,7 @@ const onSubmit = (data) => {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <FormLabel htmlFor="companyName">Company Name</FormLabel>
+                  <FormLabel htmlFor="companyName">Company Name *</FormLabel>
                   <Controller
                     name="companyName"
                     control={control}
@@ -101,7 +101,7 @@ const onSubmit = (data) => {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <FormLabel htmlFor="contactPerson">Primary Contact</FormLabel>
+                  <FormLabel htmlFor="contactPerson">Primary Contact *</FormLabel>
                   <Controller
                     name="contactPerson"
                     control={control}
@@ -109,7 +109,7 @@ const onSubmit = (data) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <FormLabel htmlFor="email">Email Address</FormLabel>
+                  <FormLabel htmlFor="email">Email Address *</FormLabel>
                   <Controller
                     name="email"
                     control={control}
@@ -120,7 +120,7 @@ const onSubmit = (data) => {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <FormLabel htmlFor="phone">Phone Number</FormLabel>
+                  <FormLabel htmlFor="phone">Phone Number *</FormLabel>
                   <Controller
                     name="phone"
                     control={control}
@@ -138,7 +138,7 @@ const onSubmit = (data) => {
               </div>
 
               <div className="space-y-2">
-                <FormLabel htmlFor="address">Address</FormLabel>
+                <FormLabel htmlFor="address">Address *</FormLabel>
                 <Controller
                   name="address"
                   control={control}
@@ -183,7 +183,7 @@ const onSubmit = (data) => {
               </div>
 
               <div className="space-y-2">
-                <FormLabel htmlFor="paymentTerms">Payment Terms</FormLabel>
+                <FormLabel htmlFor="paymentTerms">Payment Terms *</FormLabel>
             <Controller
               name="paymentTerms"
               control={control}
@@ -200,8 +200,7 @@ const onSubmit = (data) => {
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="net15">Mobile Money</SelectItem>
                     <SelectItem value="net30">Cheque</SelectItem>
-                    <SelectItem value="net45">Net 45</SelectItem>
-                    <SelectItem value="net60">Net 60</SelectItem>
+                    <SelectItem value="net45">Other</SelectItem>
                   </SelectContent>
                 </Select>
               )}
