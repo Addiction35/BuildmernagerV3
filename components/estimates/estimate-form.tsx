@@ -14,6 +14,7 @@ import { EstimateGroups } from "@/components/estimates/estimate-groups"
 import { EstimateSummary } from "@/components/estimates/estimate-summary"
 import type { Group, Section, Subsection, EstimateData } from "@/types/estimate"
 import { DownloadIcon } from "lucide-react"
+import { ImportExcelModal } from "@/components/import-excel-modal"
 
 // Sample initial data
 const initialEstimateData: EstimateData = {
@@ -85,6 +86,7 @@ export function EstimateForm() {
   const router = useRouter()
   const [estimateData, setEstimateData] = useState<EstimateData>(initialEstimateData)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
   // Calculate totals for the entire estimate
   const calculateEstimateTotal = () => {
@@ -383,6 +385,16 @@ export function EstimateForm() {
     })
   }
 
+  // Handle successful Excel import
+  const handleImportSuccess = (importedData: EstimateData) => {
+    // Merge the imported data with the current estimate data
+    // We keep the current estimate metadata but replace the groups
+    setEstimateData({
+      ...estimateData,
+      groups: importedData.groups,
+    })
+  }
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -483,9 +495,9 @@ export function EstimateForm() {
           <Button type="button" variant="outline" onClick={addGroup}>
             Add Group
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
             <DownloadIcon className="mr-2 h-4 w-4" />
-            Import excel
+            Import Excel
           </Button>
         </div>
 
@@ -525,6 +537,11 @@ export function EstimateForm() {
           {isSubmitting ? "Saving..." : "Save Estimate"}
         </Button>
       </div>
+      <ImportExcelModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportSuccess={handleImportSuccess}
+      />
     </form>
   )
 }

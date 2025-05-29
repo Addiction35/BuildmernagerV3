@@ -1,4 +1,4 @@
-import { TeamForm } from "@/components/teams/team-form"
+import TeamForm from "@/components/teams/team-form"
 
 export default function NewTeamPage() {
   return (

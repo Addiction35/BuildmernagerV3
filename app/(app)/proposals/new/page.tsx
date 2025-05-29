@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Create a new construction proposal",
 }
 
+import { Suspense } from "react";
+
 export default function NewProposalPage() {
   return (
     <div className="flex flex-col gap-8">
@@ -23,15 +25,17 @@ export default function NewProposalPage() {
         <h1 className="text-3xl font-bold tracking-tight">Create New Proposal</h1>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Proposal Details</CardTitle>
-          <CardDescription>Create a new proposal based on an estimate</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProposalForm />
-        </CardContent>
-      </Card>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Proposal Details</CardTitle>
+            <CardDescription>Create a new proposal based on an estimate</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProposalForm />
+          </CardContent>
+        </Card>
+      </Suspense>
     </div>
   )
 }

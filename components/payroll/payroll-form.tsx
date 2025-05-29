@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useFieldArray } from "react-hook-form"
 import { z } from "zod"
 import { CalendarIcon, Plus, Trash2 } from "lucide-react"
 import { format } from "date-fns"
@@ -90,6 +90,7 @@ export function PayrollForm() {
   const form = useForm<PayrollFormValues>({
     resolver: zodResolver(payrollFormSchema),
     defaultValues,
+    mode: "onChange", // Optional: Enables validation on change
   })
 
   function onSubmit(data: PayrollFormValues) {
@@ -103,7 +104,7 @@ export function PayrollForm() {
     }, 1000)
   }
 
-  const { fields, append, remove } = form.useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     name: "entries",
     control: form.control,
   })
