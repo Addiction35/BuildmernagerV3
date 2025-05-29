@@ -1,12 +1,12 @@
 // lib/queries/projectQueries.js
 import axiosInstance from '../axios';
 
-export const fetchProposals= async () => {
+export const fetchProposals = async () => {
   const { data } = await axiosInstance.get('/proposals');
   return data;
 };
 
-export const fetchPurchaseOrderById = async (id) => {
+export const fetchProposalById = async (id) => {
   const { data } = await axiosInstance.get(`/proposals/${id}`);
   return data;
 };
