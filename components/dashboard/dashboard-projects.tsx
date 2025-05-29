@@ -5,58 +5,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Eye } from "lucide-react"
+import { useProjects } from "@/lib/hooks/projectQueries"
 
 interface DashboardProjectsProps {
   extended?: boolean
 }
 
-const projects = [
-  {
-    id: "PRJ001",
-    name: "Riverside Apartments",
-    client: "Riverside Development LLC",
-    status: "In Progress",
-    value: "$1,250,000",
-    progress: "65%",
-    dueDate: "2024-08-30",
-  },
-  {
-    id: "PRJ002",
-    name: "Downtown Office Renovation",
-    client: "Metro Business Group",
-    status: "Planning",
-    value: "$450,000",
-    progress: "15%",
-    dueDate: "2024-01-15",
-  },
-  {
-    id: "PRJ003",
-    name: "Hillside Residence",
-    client: "Johnson Family",
-    status: "In Progress",
-    value: "$780,000",
-    progress: "40%",
-    dueDate: "2024-02-28",
-  },
-  {
-    id: "PRJ004",
-    name: "Community Center",
-    client: "Oakville Municipality",
-    status: "Pending Approval",
-    value: "$2,100,000",
-    progress: "5%",
-    dueDate: "2025-03-31",
-  },
-  {
-    id: "PRJ005",
-    name: "Retail Store Fitout",
-    client: "Fashion Outlet Inc.",
-    status: "Completed",
-    value: "$320,000",
-    progress: "100%",
-    dueDate: "2023-04-15",
-  },
-]
+const { data: projects, isLoading: loadProjects } = useProjects()
 
 export function DashboardProjects({ extended = false }: DashboardProjectsProps) {
   const displayProjects = extended ? projects : projects.slice(0, 5)

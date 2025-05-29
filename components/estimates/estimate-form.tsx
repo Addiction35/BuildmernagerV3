@@ -15,6 +15,8 @@ import { EstimateSummary } from "@/components/estimates/estimate-summary"
 import type { Group, Section, Subsection, EstimateData } from "@/types/estimate"
 import { DownloadIcon } from "lucide-react"
 import { ImportExcelModal } from "@/components/import-excel-modal"
+import { useGetClients } from "@/lib/hooks/clientQueries"
+import { useProjects } from "@/lib/hooks/projectQueries"
 
 // Sample initial data
 const initialEstimateData: EstimateData = {
@@ -65,22 +67,9 @@ const initialEstimateData: EstimateData = {
 }
 
 // Sample projects for dropdown
-const projects = [
-  { id: "PRJ001", name: "Riverside Apartments" },
-  { id: "PRJ002", name: "Downtown Office Renovation" },
-  { id: "PRJ003", name: "Hillside Residence" },
-  { id: "PRJ004", name: "Community Center" },
-  { id: "PRJ005", name: "Retail Store Fitout" },
-]
+const { data: projects, isLoading: loadProjects } = useProjects()
 
-// Sample clients for dropdown
-const clients = [
-  { id: "CLT001", name: "Riverside Development LLC" },
-  { id: "CLT002", name: "Metro Business Group" },
-  { id: "CLT003", name: "Johnson Family" },
-  { id: "CLT004", name: "Oakville Municipality" },
-  { id: "CLT005", name: "Fashion Outlet Inc." },
-]
+ const { data: clients, isLoading } = useGetClients()
 
 export function EstimateForm() {
   const router = useRouter()
