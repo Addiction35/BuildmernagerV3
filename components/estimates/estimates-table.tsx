@@ -83,6 +83,17 @@ const estimates = [
     amount: "$3,200,000",
     convertedToProposal: false,
   },
+  {
+  name: "",
+  projectId: "",
+  clientId: "",
+  date: new Date().toISOString().split("T")[0],
+  description: "",
+  notes: "",
+  amount: "$3,200,000",
+  convertedToProposal: false,
+  groups: [],
+}
 ]
 
 export function EstimatesTable() {

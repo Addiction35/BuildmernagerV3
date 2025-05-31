@@ -6,10 +6,9 @@ interface EstimateSummaryProps {
 }
 
 export function EstimateSummary({ total }: EstimateSummaryProps) {
-  // Calculate tax (e.g., 10%)
-  const taxRate = 0.1
+  // Calculate tax (e.g., 16%)
+  const taxRate = 1.16
   const taxAmount = total * taxRate
-
   // Calculate grand total
   const grandTotal = total + taxAmount
 
@@ -22,16 +21,16 @@ export function EstimateSummary({ total }: EstimateSummaryProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span>Subtotal</span>
-              <span>${TooltipPortal}</span>
+              <span>kes {total.toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span>Tax (10%)</span>
-              <span>${taxAmount}</span>
+              <span>Tax (16%)</span>
+              <span>kes {taxAmount.toFixed(2)}</span>
             </div>
             <div className="border-t pt-2 mt-2">
               <div className="flex items-center justify-between font-medium">
                 <span>Total</span>
-                <span>${grandTotal}</span>
+                <span>kes {grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>

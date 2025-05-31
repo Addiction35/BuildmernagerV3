@@ -62,7 +62,7 @@ export function EstimateGroups({
     <div className="space-y-4">
       {groups?.map((group) => (
         <Card key={group.id} className="overflow-hidden">
-          <div className="flex items-center justify-between bg-muted p-4">
+          <div className="flex items-center justify-between bg-muted p-2">
             <div className="flex items-center gap-2">
               <Button type="button" variant="ghost" size="icon" onClick={() => toggleGroupExpansion(group.id)}>
                 {expandedGroups.includes(group.id) ? (
@@ -76,7 +76,7 @@ export function EstimateGroups({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium">Total: ${group.amount.toLocaleString()}</div>
+              <div className="text-sm font-medium">Total: {group.amount.toLocaleString()}</div>
               <Button type="button" variant="ghost" size="icon" onClick={() => onDeleteGroup(group.id)}>
                 <Trash className="h-4 w-4" />
                 <span className="sr-only">Delete group</span>
@@ -115,39 +115,6 @@ export function EstimateGroups({
                     rows={2}
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`group-${group.id}-quantity`}>Quantity</Label>
-                  <Input
-                    id={`group-${group.id}-quantity`}
-                    type="number"
-                    value={group.quantity}
-                    onChange={(e) => handleGroupChange(group.id, "quantity", Number(e.target.value))}
-                  />
-                </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={`group-${group.id}-unit`}>Unit</Label>
-          <input
-            id={`group-${group.id}-unit`}
-            type="text"
-            value={group.unit}
-            onChange={(e) => handleGroupChange(group.id, "unit", e.target.value)}
-            className="w-full px-3 py-2 border rounded"
-          />
-        </div>
-
-
-                <div className="space-y-2">
-                  <Label htmlFor={`group-${group.id}-rate`}>Rate</Label>
-                  <Input
-                    id={`group-${group.id}-rate`}
-                    type="number"
-                    value={group.rate}
-                    onChange={(e) => handleGroupChange(group.id, "rate", Number(e.target.value))}
-                  />
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor={`group-${group.id}-amount`}>Amount</Label>
                   <Input id={`group-${group.id}-amount`} type="number" value={group.amount} readOnly />

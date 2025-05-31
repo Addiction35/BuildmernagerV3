@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useMemo } from 'react';
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -40,27 +41,35 @@ export function EstimateForm() {
  const { data: clients, isLoading } = useGetClients()
 
   // Calculate totals for the entire estimate
-  const calculateEstimateTotal = () => {
-    return estimateData.groups?.reduce((total, group) => {
-      const groupTotal = group.sections?.reduce((sectionTotal, section) => {
-        const sectionSum = section.subsections?.reduce((subsectionTotal, subsection) => {
-          return subsectionTotal + subsection.amount
+const calculateEstimateTotal = () => {
+  const groups = Array.isArray(estimateData.groups) ? estimateData.groups : []
+
+  return groups.reduce((total, group) => {
+    const groupTotal = Array.isArray(group.sections)
+      ? group.sections.reduce((sectionTotal, section) => {
+          const sectionSum = Array.isArray(section.subsections)
+            ? section.subsections.reduce((subsectionTotal, subsection) => {
+                return subsectionTotal + subsection.amount
+              }, 0)
+            : 0
+
+          // If no subsections, use the section amount as-is
+          const totalSectionAmount = section.subsections?.length ? sectionSum : section.amount
+
+          section.amount = totalSectionAmount
+          return sectionTotal + totalSectionAmount
         }, 0)
+      : 0
 
-        // Update section amount
-        section.amount = sectionSum
+    group.amount = groupTotal
+    return total + groupTotal
+  }, 0)
+}
 
-        return sectionTotal + sectionSum
-      }, 0)
 
-      // Update group amount
-      group.amount = groupTotal
 
-      return total + groupTotal
-    }, 0)
-  }
+const estimateTotal = useMemo(() => calculateEstimateTotal(), [estimateData])
 
-  const estimateTotal = calculateEstimateTotal()
 
   // Handle input changes for the estimate header
   const handleEstimateChange = (field: string, value: string) => {

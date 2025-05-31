@@ -74,7 +74,7 @@ export function EstimateSections({
     <div className="space-y-4 pl-6 border-l-2 border-muted">
       {sections?.map((section) => (
         <Card key={section.id} className="overflow-hidden">
-          <div className="flex items-center justify-between bg-muted/50 p-4">
+          <div className="flex items-center justify-between bg-muted/50 p-2">
             <div className="flex items-center gap-2">
               <Button type="button" variant="ghost" size="icon" onClick={() => toggleSectionExpansion(section.id)}>
                 {expandedSections.includes(section.id) ? (
@@ -88,7 +88,7 @@ export function EstimateSections({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium">Total: ${section.amount.toLocaleString()}</div>
+              <div className="text-sm font-medium">Total: kes {section.amount.toLocaleString()}</div>
               <Button type="button" variant="ghost" size="icon" onClick={() => onDeleteSection(section.id)}>
                 <Trash className="h-4 w-4" />
                 <span className="sr-only">Delete section</span>
