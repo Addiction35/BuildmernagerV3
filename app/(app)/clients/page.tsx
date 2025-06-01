@@ -1,14 +1,9 @@
-import type { Metadata } from "next"
+"use client"
+
 import { ClientsTable } from "@/components/clients/clients-table"
 import { ClientsFilter } from "@/components/clients/clients-filter"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
-export const metadata: Metadata = {
-  title: "Clients | Construction Management",
-  description: "Manage your clients and customers",
-}
-
 export default function ClientsPage() {
   return (
     <div className="flex flex-col gap-6">

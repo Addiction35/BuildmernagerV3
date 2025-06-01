@@ -1,15 +1,11 @@
-import type { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BillsTable } from "@/components/bills/bills-table"
 import { BillsFilter } from "@/components/bills/bills-filter"
 import { BillsSummary } from "@/components/bills/bills-summary"
-
-export const metadata: Metadata = {
-  title: "Bills | Construction Management",
-  description: "Manage your construction bills and payments",
-}
 
 export default function BillsPage() {
   return (
