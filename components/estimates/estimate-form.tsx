@@ -18,6 +18,7 @@ import { DownloadIcon } from "lucide-react"
 import { ImportExcelModal } from "@/components/import-excel-modal"
 import { useGetClients } from "@/lib/hooks/clientQueries"
 import { useProjects } from "@/lib/hooks/projectQueries"
+import { useCreateEstimate } from "@/lib/hooks/EstimateQueries";
 
 // Sample initial data
 const initialEstimateData: EstimateData = {
@@ -38,7 +39,7 @@ export function EstimateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const { data: projects, isLoading: loadProjects } = useProjects()
- const { data: clients, isLoading } = useGetClients()
+ const { data: clients, isLoading: clientsLoading } = useGetClients()
 
   // Calculate totals for the entire estimate
 const calculateEstimateTotal = () => {
@@ -355,26 +356,24 @@ const estimateTotal = useMemo(() => calculateEstimateTotal(), [estimateData])
     })
   }
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const { mutate,isError } = useCreateEstimate();
 
-    try {
-      // In a real app, you would send the data to your API here
-      console.log("Submitting estimate:", estimateData)
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Redirect to estimates list
-      router.push("/estimates")
-    } catch (error) {
-      console.error("Error submitting estimate:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  mutate(estimateData, {
+    onSuccess: () => {
+      router.push('/estimates'); // Navigate after success
+    },
+    onSettled: () => {
+      setIsSubmitting(false); // Reset form state
+    },
+    onError: (error) => {
+      console.error('Failed to submit estimate:', error);
+    },
+  });
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">

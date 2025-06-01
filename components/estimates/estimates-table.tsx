@@ -15,88 +15,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Edit, Eye, FileText, MoreHorizontal, Trash } from "lucide-react"
-
-const estimates = [
-  {
-    id: "EST001",
-    name: "Riverside Apartments - Initial Estimate",
-    project: "Riverside Apartments",
-    projectId: "PRJ001",
-    client: "Riverside Development LLC",
-    date: "2023-04-10",
-    status: "Approved",
-    amount: "$1,250,000",
-    convertedToProposal: true,
-  },
-  {
-    id: "EST003",
-    name: "Hillside Residence - Construction Estimate",
-    project: "Hillside Residence",
-    projectId: "PRJ003",
-    client: "Johnson Family",
-    date: "2023-02-28",
-    status: "Approved",
-    amount: "$780,000",
-    convertedToProposal: true,
-  },
-  {
-    id: "EST004",
-    name: "Community Center - Initial Estimate",
-    project: "Community Center",
-    projectId: "PRJ004",
-    client: "Oakville Municipality",
-    date: "2023-08-20",
-    status: "Draft",
-    amount: "$2,100,000",
-    convertedToProposal: false,
-  },
-  {
-    id: "EST005",
-    name: "Retail Store - Fitout Estimate",
-    project: "Retail Store Fitout",
-    projectId: "PRJ005",
-    client: "Fashion Outlet Inc.",
-    date: "2022-12-05",
-    status: "Approved",
-    amount: "$320,000",
-    convertedToProposal: true,
-  },
-  {
-    id: "EST006",
-    name: "Industrial Warehouse - Construction Estimate",
-    project: "Industrial Warehouse",
-    projectId: "PRJ006",
-    client: "Logistics Pro LLC",
-    date: "2023-03-15",
-    status: "Rejected",
-    amount: "$1,850,000",
-    convertedToProposal: false,
-  },
-  {
-    id: "EST007",
-    name: "School Renovation - Initial Estimate",
-    project: "School Renovation",
-    projectId: "PRJ007",
-    client: "Westside School District",
-    date: "2023-10-10",
-    status: "Pending",
-    amount: "$3,200,000",
-    convertedToProposal: false,
-  },
-  {
-  name: "",
-  projectId: "",
-  clientId: "",
-  date: new Date().toISOString().split("T")[0],
-  description: "",
-  notes: "",
-  amount: "$3,200,000",
-  convertedToProposal: false,
-  groups: [],
-}
-]
+import { useEstimates } from "@/lib/hooks/EstimateQueries"
 
 export function EstimatesTable() {
+  const { data: estimates, isLoading, error } = useEstimates()
   const [selectedEstimates, setSelectedEstimates] = useState<string[]>([])
 
   const toggleEstimate = (estimateId: string) => {
@@ -106,7 +28,21 @@ export function EstimatesTable() {
   }
 
   const toggleAll = () => {
-    setSelectedEstimates((prev) => (prev.length === estimates.length ? [] : estimates.map((estimate) => estimate.id)))
+    setSelectedEstimates((prev) =>
+      prev.length === (estimates?.length ?? 0) ? [] : estimates?.map((estimate) => estimate._id) ?? [],
+    )
+  }
+
+  if (isLoading) {
+    return <div className="p-4 text-center">Loading estimates...</div>
+  }
+
+  if (error) {
+    return <div className="p-4 text-center text-destructive">Error loading estimates: {(error as Error).message}</div>
+  }
+
+  if (!estimates || estimates.length === 0) {
+    return <div className="p-4 text-center">No estimates found.</div>
   }
 
   return (
@@ -126,49 +62,51 @@ export function EstimatesTable() {
             <TableHead>Client</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Amount</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {estimates.map((estimate) => (
-            <TableRow key={estimate.id}>
+            <TableRow key={estimate._id}>
               <TableCell>
                 <Checkbox
-                  checked={selectedEstimates.includes(estimate.id)}
-                  onCheckedChange={() => toggleEstimate(estimate.id)}
+                  checked={selectedEstimates.includes(estimate._id)}
+                  onCheckedChange={() => toggleEstimate(estimate._id)}
                   aria-label={`Select ${estimate.name}`}
                 />
               </TableCell>
               <TableCell className="font-medium">
-                <div className="font-medium">{estimate.name}</div>
-                <div className="text-xs text-muted-foreground">{estimate.id}</div>
+                <div>{estimate.name ?? "N/A"}</div>
+                <div className="text-xs text-muted-foreground">{estimate.estimateId ?? "N/A"}</div>
               </TableCell>
               <TableCell>
-                <Link href={`/projects/${estimate.projectId}`} className="text-blue-600 hover:underline">
-                  {estimate.project}
-                </Link>
+                {estimate.projectId ? (
+                  <Link href={`/projects/${estimate.projectId._id}`} className="text-blue-600 hover:underline">
+                    {estimate.projectId.name ?? "N/A"}
+                  </Link>
+                ) : (
+                  "N/A"
+                )}
               </TableCell>
-              <TableCell>{estimate.client}</TableCell>
-              <TableCell>{new Date(estimate.date).toLocaleDateString()}</TableCell>
+              <TableCell>{estimate.clientId.primaryContact ?? "N/A"}</TableCell>
+              <TableCell>{estimate.date ? new Date(estimate.date).toLocaleDateString() : "N/A"}</TableCell>
               <TableCell>
                 <Badge
                   variant={
                     estimate.status === "Approved"
                       ? "success"
                       : estimate.status === "Pending"
-                        ? "default"
-                        : estimate.status === "Draft"
-                          ? "secondary"
-                          : estimate.status === "Rejected"
-                            ? "destructive"
-                            : "outline"
+                      ? "default"
+                      : estimate.status === "Draft"
+                      ? "secondary"
+                      : estimate.status === "Rejected"
+                      ? "destructive"
+                      : "outline"
                   }
                 >
-                  {estimate.status}
+                  {estimate.status ?? "N/A"}
                 </Badge>
               </TableCell>
-              <TableCell>{estimate.amount}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -181,18 +119,18 @@ export function EstimatesTable() {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
                       <Eye className="mr-2 h-4 w-4" />
-                      <Link href={`/estimates/${estimate.id}`}>View Details</Link>
+                      <Link href={`/estimates/${estimate._id}`}>View Details</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Edit className="mr-2 h-4 w-4" />
-                      <Link href={`/estimates/${estimate.id}/edit`}>Edit Estimate</Link>
+                      <Link href={`/estimates/${estimate._id}/edit`}>Edit Estimate</Link>
                     </DropdownMenuItem>
                     {!estimate.convertedToProposal && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>
                           <FileText className="mr-2 h-4 w-4" />
-                          <Link href={`/proposals/new?from=${estimate.id}`}>Convert to Proposal</Link>
+                          <Link href={`/proposals/new?from=${estimate._id}`}>Convert to Proposal</Link>
                         </DropdownMenuItem>
                       </>
                     )}
