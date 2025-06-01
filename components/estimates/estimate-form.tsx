@@ -454,7 +454,7 @@ const handleSubmit = (e: React.FormEvent) => {
           <Button type="button" variant="outline" onClick={addGroup}>
             Add Group
           </Button>
-          <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+          <Button type="button" variant="outline" onClick={() => setIsImportModalOpen(true)}>
             <DownloadIcon className="mr-2 h-4 w-4" />
             Import Excel
           </Button>
