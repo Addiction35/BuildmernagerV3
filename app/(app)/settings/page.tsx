@@ -18,12 +18,10 @@ import {
   Mail,
   Bell,
   Users,
-  Database,
   Palette,
   Plus,
   Trash2,
   Upload,
-  Download,
   Save,
   Eye,
   EyeOff,
@@ -81,10 +79,6 @@ export default function SettingsPage() {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Users</span>
-            </TabsTrigger>
-            <TabsTrigger value="backup" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              <span className="hidden sm:inline">Backup</span>
             </TabsTrigger>
             <TabsTrigger value="branding" className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
@@ -467,115 +461,6 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Data Backup & Restore */}
-          <TabsContent value="backup" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Automated Backups</CardTitle>
-                  <CardDescription>Configure automatic data backup settings</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Enable Automated Backups</div>
-                      <div className="text-sm text-gray-600">Automatically backup your data</div>
-                    </div>
-                    <Switch />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="backup-frequency">Backup Frequency</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select frequency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="daily">Daily</SelectItem>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="monthly">Monthly</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="backup-time">Backup Time</Label>
-                    <Input id="backup-time" type="time" defaultValue="02:00" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="retention-period">Retention Period</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select retention" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="30">30 days</SelectItem>
-                        <SelectItem value="90">90 days</SelectItem>
-                        <SelectItem value="365">1 year</SelectItem>
-                        <SelectItem value="forever">Forever</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Manual Backup & Restore</CardTitle>
-                  <CardDescription>Create manual backups or restore from existing ones</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
-                    Create Manual Backup
-                  </Button>
-
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <Label htmlFor="backup-file">Restore from Backup</Label>
-                    <div className="flex gap-2">
-                      <Input id="backup-file" type="file" accept=".backup" />
-                      <Button variant="outline">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Restore
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Recent Backups</Label>
-                    <div className="space-y-2">
-                      {[
-                        { date: "2024-01-15", size: "2.3 GB", type: "Automated" },
-                        { date: "2024-01-14", size: "2.2 GB", type: "Manual" },
-                        { date: "2024-01-13", size: "2.1 GB", type: "Automated" },
-                      ].map((backup, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded">
-                          <div>
-                            <div className="font-medium">{backup.date}</div>
-                            <div className="text-sm text-gray-600">
-                              {backup.size} • {backup.type}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              Download
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              Restore
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
 
           {/* Company Branding */}
