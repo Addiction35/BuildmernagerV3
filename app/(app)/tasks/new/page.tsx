@@ -1,8 +1,5 @@
 "use client";
-
-import dynamic from "next/dynamic";
-
-const TaskForm = dynamic(() => import("@/components/tasks/task-form"), { ssr: false });
+import { TaskForm } from "@/components/tasks/task-form";
 
 export default function NewTaskPage() {
   return (
