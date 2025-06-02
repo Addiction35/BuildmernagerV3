@@ -7,10 +7,15 @@ interface EstimateSummaryProps {
 
 export function EstimateSummary({ total }: EstimateSummaryProps) {
   // Calculate tax (e.g., 16%)
+  const subtotal = total
+
   const taxRate = 1.16
-  const taxAmount = total / taxRate
+
+  const totalAmount = subtotal * taxRate // Assuming 16% tax rate inclusive VAT
+
+  const taxAmount = totalAmount - subtotal
   // Calculate grand total
-  const grandTotal = total + taxAmount
+  const grandTotal = totalAmount
 
   return (
     <div className="space-y-4">
