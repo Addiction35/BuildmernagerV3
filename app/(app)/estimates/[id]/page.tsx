@@ -135,16 +135,16 @@ export default function EstimatePage({ params }: { params: { id: string } }) {
               <div className="w-full max-w-sm space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${total.toLocaleString()}</span>
+                  <span>kes {total.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span>Tax (10%)</span>
-                  <span>${taxAmount.toLocaleString()}</span>
+                  <span>kes {taxAmount.toLocaleString()}</span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex items-center justify-between font-medium">
                     <span>Total</span>
-                    <span>${grandTotal.toLocaleString()}</span>
+                    <span>KSH {grandTotal.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

@@ -84,8 +84,8 @@ export function EstimateItemsTable({ groups }: EstimateItemsTableProps) {
                       <TableCell>{section.name}</TableCell>
                       <TableCell>{section.quantity}</TableCell>
                       <TableCell>{section.unit}</TableCell>
-                      <TableCell>{section.rate > 0 ? `$${section.rate.toLocaleString()}` : ""}</TableCell>
-                      <TableCell className="text-right">${section.amount.toLocaleString()}</TableCell>
+                      <TableCell>{section.rate > 0 ? `kes ${section.rate.toLocaleString()}` : ""}</TableCell>
+                      <TableCell className="text-right">kes {section.amount.toLocaleString()}</TableCell>
                     </TableRow>
 
                     {isSectionExpanded(section.id) &&
@@ -96,7 +96,7 @@ export function EstimateItemsTable({ groups }: EstimateItemsTableProps) {
                           <TableCell>{subsection.name}</TableCell>
                           <TableCell>{subsection.quantity}</TableCell>
                           <TableCell>{subsection.unit}</TableCell>
-                          <TableCell>${subsection.rate.toLocaleString()}</TableCell>
+                          <TableCell>kes {subsection.rate.toLocaleString()}</TableCell>
                           <TableCell className="text-right">${subsection.amount.toLocaleString()}</TableCell>
                         </TableRow>
                       ))}
