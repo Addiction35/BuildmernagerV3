@@ -11,7 +11,7 @@ import { ArrowLeft, Download, FileText } from "lucide-react"
 import { useEstimate } from "@/lib/hooks/EstimateQueries"
 
 export default function EstimatePage({ params }: { params: { id: string } }) {
-  const { id } = use(params) // ✅ unwrap the promise
+  const { id } = use(params) ?? {}; // ✅ unwrap the promise
 
   const { data: estimate, isLoading, error } = useEstimate(id)
 

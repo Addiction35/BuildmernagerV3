@@ -1,4 +1,5 @@
-import type { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,44 +11,16 @@ import { ProjectDocuments } from "@/components/projects/project-documents"
 import { ProjectTimeline } from "@/components/projects/project-timeline"
 import { ProjectFinancials } from "@/components/projects/project-financials"
 import { ArrowLeft, Building2, CalendarRange, FileText, Receipt } from "lucide-react"
-
-export const metadata: Metadata = {
-  title: "Project Details | Construction Management",
-  description: "View project details",
-}
-
-// This would normally come from a database
-const getProject = (id: string) => {
-  const projects = [
-    {
-      id: "PRJ001",
-      name: "Riverside Apartments",
-      client: "Riverside Development LLC",
-      location: "123 River St, Riverside",
-      status: "In Progress",
-      value: "$1,250,000",
-      startDate: "2023-05-15",
-      endDate: "2024-08-30",
-      progress: "65%",
-      description: "A luxury apartment complex with 48 units, featuring modern amenities and riverside views.",
-      manager: "Sarah Johnson",
-      contact: {
-        name: "Robert Thompson",
-        email: "robert@riversidedev.com",
-        phone: "(555) 123-4567",
-      },
-    },
-  ]
-
-  return projects.find((project) => project.id === id)
-}
+import { use } from "react"
+import { useProject } from "@/lib/hooks/projectQueries"
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
-  const project = getProject(params.id)
+  const { id } = use(params) ?? {}; // ✅ unwrap the promise
 
-  if (!project) {
-    notFound()
-  }
+  const { data: project, isLoading, error } = useProject(id)
+
+  if (isLoading) return <div>Loading...</div>
+  if (error || !project) return notFound()
 
   return (
     <div className="flex flex-col gap-8">
@@ -59,28 +32,32 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <span className="sr-only">Back</span>
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{project?.name || "Untitled Project"}</h1>
           <Badge
             variant={
-              project.status === "Completed"
+              project?.status === "Completed"
                 ? "success"
-                : project.status === "In Progress"
+                : project?.status === "In Progress"
                   ? "default"
-                  : project.status === "Planning"
+                  : project?.status === "Planning"
                     ? "secondary"
                     : "outline"
             }
           >
-            {project.status}
+            {project?.status}
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={`/estimates/new?project=${project.id}`}>
-            <Button variant="outline">Create Estimate</Button>
-          </Link>
-          <Link href={`/projects/${project.id}/edit`}>
-            <Button>Edit Project</Button>
-          </Link>
+            {project?._id && (
+              <>
+                <Link href={`/estimates/new?project=${project._id}`}>
+                  <Button variant="outline">Create Estimate</Button>
+                </Link>
+                <Link href={`/projects/${project._id}/edit`}>
+                  <Button>Edit Project</Button>
+                </Link>
+              </>
+            )}
         </div>
       </div>
 
@@ -91,7 +68,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{project.value}</div>
+            <div className="text-2xl font-bold">{project?.value ?? "N/A"}</div>
           </CardContent>
         </Card>
         <Card>
@@ -118,9 +95,15 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <CalendarRange className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-sm">
-              {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
-            </div>
+          <div className="text-sm">
+            {project?.startDate
+              ? new Date(project.startDate).toLocaleDateString()
+              : "N/A"}{" "}
+            -{" "}
+            {project?.endDate
+              ? new Date(project.endDate).toLocaleDateString()
+              : "N/A"}
+          </div>
           </CardContent>
         </Card>
       </div>
@@ -139,7 +122,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <CardDescription>View and manage project information</CardDescription>
             </CardHeader>
             <CardContent>
-              <ProjectDetails project={project} />
+              <ProjectDetails project={project ?? {}} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -150,7 +133,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <CardDescription>Manage estimates, proposals, purchase orders, and other documents</CardDescription>
             </CardHeader>
             <CardContent>
-              <ProjectDocuments projectId={project.id} />
+              <ProjectDocuments projectId={project?._id} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -161,7 +144,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <CardDescription>View project milestones and schedule</CardDescription>
             </CardHeader>
             <CardContent>
-              <ProjectTimeline projectId={project.id} />
+              <ProjectTimeline projectId={project?._id} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -172,7 +155,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <CardDescription>Track project budget, expenses, and financial metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <ProjectFinancials projectId={project.id} />
+              <ProjectFinancials projectId={project?._id} />
             </CardContent>
           </Card>
         </TabsContent>

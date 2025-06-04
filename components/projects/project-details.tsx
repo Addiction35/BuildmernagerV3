@@ -3,9 +3,11 @@ import { Separator } from "@/components/ui/separator"
 
 interface ProjectDetailsProps {
   project: {
-    id: string
+    projectNumber: string
     name: string
-    client: string
+    client: {
+      primaryContact: string
+    }
     location: string
     status: string
     value: string
@@ -14,11 +16,9 @@ interface ProjectDetailsProps {
     progress: string
     description: string
     manager: string
-    contact: {
-      name: string
-      email: string
-      phone: string
-    }
+    contactName: string
+    contactEmail: string
+    contactPhone: string
   }
 }
 
@@ -33,13 +33,14 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
       <Separator />
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* Project Information */}
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-base">Project Information</Label>
             <div className="grid grid-cols-2 gap-4 rounded-lg border p-4">
               <div>
                 <p className="text-sm font-medium">Project ID</p>
-                <p className="text-sm text-muted-foreground">{project.id}</p>
+                <p className="text-sm text-muted-foreground">{project.projectNumber}</p>
               </div>
               <div>
                 <p className="text-sm font-medium">Status</p>
@@ -47,11 +48,15 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
               </div>
               <div>
                 <p className="text-sm font-medium">Start Date</p>
-                <p className="text-sm text-muted-foreground">{new Date(project.startDate).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(project.startDate).toLocaleDateString()}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium">End Date</p>
-                <p className="text-sm text-muted-foreground">{new Date(project.endDate).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(project.endDate).toLocaleDateString()}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium">Value</p>
@@ -72,17 +77,22 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
           </div>
         </div>
 
+        {/* Client and Manager Information */}
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-base">Client Information</Label>
-            <div className="rounded-lg border p-4">
-              <p className="text-sm font-medium">Client</p>
-              <p className="text-sm text-muted-foreground">{project.client}</p>
+            <div className="rounded-lg border p-4 space-y-2">
+              <div>
+                <p className="text-sm font-medium">Client</p>
+                <span className="text-sm text-muted-foreground">
+                  {project.client?.primaryContact ?? "No client name"}
+                </span>
+              </div>
               <div className="mt-4 space-y-2">
                 <p className="text-sm font-medium">Contact Person</p>
-                <p className="text-sm text-muted-foreground">{project.contact.name}</p>
-                <p className="text-sm text-muted-foreground">{project.contact.email}</p>
-                <p className="text-sm text-muted-foreground">{project.contact.phone}</p>
+                <p className="text-sm text-muted-foreground">{project.contactName}</p>
+                <p className="text-sm text-muted-foreground">{project.contactEmail}</p>
+                <p className="text-sm text-muted-foreground">{project.contactPhone}</p>
               </div>
             </div>
           </div>

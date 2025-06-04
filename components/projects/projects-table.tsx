@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Edit, Eye, MoreHorizontal, Trash } from "lucide-react"
-import {  useProjects } from "@/lib/hooks/projectQueries"
+import {  useDeleteProject, useProjects } from "@/lib/hooks/projectQueries"
+import { toast } from "sonner"
 
 export function ProjectsTable() {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([])
@@ -31,9 +32,24 @@ console.log(projects);
   const toggleAll = () => {
     setSelectedProjects((prev) => (prev.length === projects.length ? [] : projects.map((project) => project.id)))
   }
-    if (isLoading) {
-      return <div>Loading...</div>
-    }
+
+  const deleteMutation = useDeleteProject();
+
+const handleDelete = (id: string) => {
+  if (confirm("Are you sure you want to delete this project?")) {
+    toast.promise(
+      deleteMutation.mutateAsync(id),
+      {
+        loading: "Deleting Project...",
+        success: "Project deleted successfully",
+        error: "Failed to delete Project",
+      }
+    )
+  }
+}
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   if (!projects || projects.length === 0) 
   {
@@ -123,7 +139,7 @@ console.log(projects);
                       <Link href={`/projects/${project._id}/edit`}>Edit Project</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem onClick={() => handleDelete(project._id)} className="text-destructive">
                       <Trash className="mr-2 h-4 w-4" />
                       Delete Project
                     </DropdownMenuItem>
