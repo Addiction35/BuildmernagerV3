@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <ReactQueryDevtools initialIsOpen={false} />
           {/* Sonner Toasts */}
-          <Toaster />
+          <Toaster richColors position="top-right"/>
         </QueryClientProvider>
       </body>
 

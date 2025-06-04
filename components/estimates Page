@@ -19,16 +19,9 @@ export default function EstimatePage({ params }: { params: { id: string } }) {
   if (error || !estimate) return notFound()
 
   const total = estimate.groups?.reduce((acc, group) => acc + (group?.amount || 0), 0) ?? 0
-
-  const subtotal = total
-
-  const taxRate = 1.16
-
-  const totalAmount = subtotal * taxRate // Assuming 16% tax rate inclusive VAT
-
-  const taxAmount = totalAmount - subtotal
-  // Calculate grand total
-  const grandTotal = totalAmount
+  const taxRate = 0.1
+  const taxAmount = total * taxRate
+  const grandTotal = total + taxAmount
 
   return (
     <div className="flex flex-col gap-8">
@@ -82,10 +75,9 @@ export default function EstimatePage({ params }: { params: { id: string } }) {
             <CardTitle className="text-sm font-medium">Project</CardTitle>
           </CardHeader>
           <CardContent>
-            
             {estimate?.projectId ? (
               <Link href={`/projects/${estimate.projectId._id}`} className="text-blue-600 hover:underline">
-                {estimate?.projectId.name ?? "View Project"}
+                {estimate?.project ?? "View Project"}
               </Link>
             ) : (
               <span className="text-muted-foreground">No project</span>
@@ -97,7 +89,7 @@ export default function EstimatePage({ params }: { params: { id: string } }) {
             <CardTitle className="text-sm font-medium">Client</CardTitle>
           </CardHeader>
           <CardContent>
-            <div>{estimate?.clientId.primaryContact ?? "N/A"}</div>
+            <div>{estimate?.client ?? "N/A"}</div>
           </CardContent>
         </Card>
         <Card>

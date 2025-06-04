@@ -1,5 +1,5 @@
 "use client"
-
+import { toast } from "sonner"
 import { useState } from "react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Edit, Eye, FileText, MoreHorizontal, Trash } from "lucide-react"
-import { useEstimates } from "@/lib/hooks/EstimateQueries"
+import { useEstimates, useDeleteEstimate } from "@/lib/hooks/EstimateQueries"
 
 export function EstimatesTable() {
   const { data: estimates, isLoading, error } = useEstimates()
@@ -32,6 +32,21 @@ export function EstimatesTable() {
       prev.length === (estimates?.length ?? 0) ? [] : estimates?.map((estimate) => estimate._id) ?? [],
     )
   }
+
+const deleteMutation = useDeleteEstimate();
+
+const handleDelete = (id: string) => {
+  if (confirm("Are you sure you want to delete this estimate?")) {
+    toast.promise(
+      deleteMutation.mutateAsync(id),
+      {
+        loading: "Deleting estimate...",
+        success: "Estimate deleted successfully",
+        error: "Failed to delete estimate",
+      }
+    )
+  }
+}
 
   if (isLoading) {
     return <div className="p-4 text-center">Loading estimates...</div>
@@ -135,7 +150,7 @@ export function EstimatesTable() {
                       </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem onClick={() => handleDelete(estimate._id)} className="text-destructive">
                       <Trash className="mr-2 h-4 w-4" />
                       Delete Estimate
                     </DropdownMenuItem>
