@@ -56,7 +56,7 @@ export function EstimateItemsTable({ groups }: EstimateItemsTableProps) {
                 </TableCell>
                 <TableCell>{group.code}</TableCell>
                 <TableCell>{group.name}</TableCell>
-                <TableCell>{group.quantity}</TableCell>
+                <TableCell>{group.quantity > 0 ? `$${group.quantity.toLocaleString()}` : ""}</TableCell>
                 <TableCell>{group.unit}</TableCell>
                 <TableCell>{group.rate > 0 ? `$${group.rate.toLocaleString()}` : ""}</TableCell>
                 <TableCell className="text-right">${group.amount.toLocaleString()}</TableCell>
