@@ -56,10 +56,10 @@ export function EstimateItemsTable({ groups }: EstimateItemsTableProps) {
                 </TableCell>
                 <TableCell>{group.code}</TableCell>
                 <TableCell>{group.name}</TableCell>
-                <TableCell>{group.quantity > 0 ? `$${group.quantity.toLocaleString()}` : ""}</TableCell>
-                <TableCell>{group.unit}</TableCell>
-                <TableCell>{group.rate > 0 ? `$${group.rate.toLocaleString()}` : ""}</TableCell>
-                <TableCell className="text-right">${group.amount.toLocaleString()}</TableCell>
+                <TableCell>{group.quantity > 0 ? `Kes ${group.quantity.toLocaleString()}` : ""}</TableCell>
+                <TableCell>{group.unit != "LS" ? `${group.unit.toLocaleString()}` : "" }</TableCell>
+                <TableCell>{group.rate > 0 ? `Kes ${group.rate.toLocaleString()}` : ""}</TableCell>
+                <TableCell className="text-right">Kes {group.amount.toLocaleString()}</TableCell>
               </TableRow>
 
               {isGroupExpanded(group.id) &&
@@ -84,8 +84,8 @@ export function EstimateItemsTable({ groups }: EstimateItemsTableProps) {
                       <TableCell>{section.name}</TableCell>
                       <TableCell>{section.quantity}</TableCell>
                       <TableCell>{section.unit}</TableCell>
-                      <TableCell>{section.rate > 0 ? `kes ${section.rate.toLocaleString()}` : ""}</TableCell>
-                      <TableCell className="text-right">kes {section.amount.toLocaleString()}</TableCell>
+                      <TableCell>{section.rate > 0 ? `Kes ${section.rate.toLocaleString()}` : ""}</TableCell>
+                      <TableCell className="text-right">Kes {section.amount.toLocaleString()}</TableCell>
                     </TableRow>
 
                     {isSectionExpanded(section.id) &&
@@ -96,8 +96,8 @@ export function EstimateItemsTable({ groups }: EstimateItemsTableProps) {
                           <TableCell>{subsection.name}</TableCell>
                           <TableCell>{subsection.quantity}</TableCell>
                           <TableCell>{subsection.unit}</TableCell>
-                          <TableCell>kes {subsection.rate.toLocaleString()}</TableCell>
-                          <TableCell className="text-right">kes {subsection.amount.toLocaleString()}</TableCell>
+                          <TableCell>Kes {subsection.rate.toLocaleString()}</TableCell>
+                          <TableCell className="text-right">Kes {subsection.amount.toLocaleString()}</TableCell>
                         </TableRow>
                       ))}
                   </>
