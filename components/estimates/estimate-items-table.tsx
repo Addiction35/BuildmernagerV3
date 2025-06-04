@@ -97,7 +97,7 @@ export function EstimateItemsTable({ groups }: EstimateItemsTableProps) {
                           <TableCell>{subsection.quantity}</TableCell>
                           <TableCell>{subsection.unit}</TableCell>
                           <TableCell>kes {subsection.rate.toLocaleString()}</TableCell>
-                          <TableCell className="text-right">${subsection.amount.toLocaleString()}</TableCell>
+                          <TableCell className="text-right">kes {subsection.amount.toLocaleString()}</TableCell>
                         </TableRow>
                       ))}
                   </>
