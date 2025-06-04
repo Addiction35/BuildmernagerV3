@@ -138,7 +138,7 @@ export default function EstimatePage({ params }: { params: { id: string } }) {
                   <span>kes {total.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span>Tax (10%)</span>
+                  <span>Tax (16%)</span>
                   <span>kes {taxAmount.toLocaleString()}</span>
                 </div>
                 <div className="border-t pt-2 mt-2">
