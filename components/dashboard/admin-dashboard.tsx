@@ -18,6 +18,7 @@ export function AdminDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader title="Admin Dashboard" description="Complete system overview and management" />
+  
       <DashboardStats />
 
       <Tabs defaultValue="overview" className="w-full">
