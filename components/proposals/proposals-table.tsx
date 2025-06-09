@@ -15,66 +15,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Edit, Eye, MoreHorizontal, Receipt, Trash } from "lucide-react"
+import { useDeleteProposal, useProposals } from "@/lib/hooks/proposalQueries"
+import { toast } from "sonner"
 
-const proposals = [
-  {
-    id: "PRO001",
-    name: "Riverside Apartments - Construction Proposal",
-    project: "Riverside Apartments",
-    projectId: "PRJ001",
-    client: "Riverside Development LLC",
-    date: "2023-04-20",
-    status: "Approved",
-    amount: "$1,250,000",
-    estimateId: "EST001",
-  },
-  {
-    id: "PRO002",
-    name: "Hillside Residence - Construction Proposal",
-    project: "Hillside Residence",
-    projectId: "PRJ003",
-    client: "Johnson Family",
-    date: "2023-03-10",
-    status: "Approved",
-    amount: "$780,000",
-    estimateId: "EST003",
-  },
-  {
-    id: "PRO003",
-    name: "Retail Store - Fitout Proposal",
-    project: "Retail Store Fitout",
-    projectId: "PRJ005",
-    client: "Fashion Outlet Inc.",
-    date: "2022-12-15",
-    status: "Approved",
-    amount: "$320,000",
-    estimateId: "EST005",
-  },
-  {
-    id: "PRO004",
-    name: "Medical Center - Construction Proposal",
-    project: "Medical Center",
-    projectId: "PRJ008",
-    client: "Healthcare Partners",
-    date: "2024-01-20",
-    status: "Pending Approval",
-    amount: "$4,500,000",
-    estimateId: null,
-  },
-  {
-    id: "PRO005",
-    name: "School Renovation - Phase 1 Proposal",
-    project: "School Renovation",
-    projectId: "PRJ007",
-    client: "Westside School District",
-    date: "2023-10-25",
-    status: "Pending Approval",
-    amount: "$1,500,000",
-    estimateId: null,
-  },
-]
 
 export function ProposalsTable() {
+  const { data: proposals, isLoading } = useProposals()
   const [selectedProposals, setSelectedProposals] = useState<string[]>([])
 
   const toggleProposal = (proposalId: string) => {
@@ -86,7 +32,27 @@ export function ProposalsTable() {
   const toggleAll = () => {
     setSelectedProposals((prev) => (prev.length === proposals.length ? [] : proposals.map((proposal) => proposal.id)))
   }
+  const deleteMutation = useDeleteProposal();
+  const handleDelete = (id: string) => {
+  if (confirm("Are you sure you want to delete this project?")) {
+    toast.promise(
+      deleteMutation.mutateAsync(id),
+      {
+        loading: "Deleting Proposal...",
+        success: "Proposal deleted successfully",
+        error: "Failed to delete Proposal",
+      }
+    )
+  }
+}
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
+  if (!proposals || proposals.length === 0) 
+  {
+    return <div>No projects available</div>;
+  }
   return (
     <div className="rounded-md border">
       <Table>
@@ -109,8 +75,8 @@ export function ProposalsTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {proposals.map((proposal) => (
-            <TableRow key={proposal.id}>
+          {proposals?.map((proposal) => (
+            <TableRow key={proposal._id}>
               <TableCell>
                 <Checkbox
                   checked={selectedProposals.includes(proposal.id)}
@@ -120,14 +86,14 @@ export function ProposalsTable() {
               </TableCell>
               <TableCell className="font-medium">
                 <div className="font-medium">{proposal.name}</div>
-                <div className="text-xs text-muted-foreground">{proposal.id}</div>
+                <div className="text-xs text-muted-foreground">{proposal.proposalId}</div>
               </TableCell>
               <TableCell>
-                <Link href={`/projects/${proposal.projectId}`} className="text-blue-600 hover:underline">
-                  {proposal.project}
+                <Link href={`/projects/${proposal.projectId._id}`} className="text-blue-600 hover:underline">
+                  {proposal.projectId.name}
                 </Link>
               </TableCell>
-              <TableCell>{proposal.client}</TableCell>
+              <TableCell>{proposal.clientId.primaryContact}</TableCell>
               <TableCell>{new Date(proposal.date).toLocaleDateString()}</TableCell>
               <TableCell>
                 <Badge
@@ -157,11 +123,11 @@ export function ProposalsTable() {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
                       <Eye className="mr-2 h-4 w-4" />
-                      <Link href={`/proposals/${proposal.id}`}>View Details</Link>
+                      <Link href={`/proposals/${proposal._id}`}>View Details</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Edit className="mr-2 h-4 w-4" />
-                      <Link href={`/proposals/${proposal.id}/edit`}>Edit Proposal</Link>
+                      <Link href={`/proposals/${proposal._id}/edit`}>Edit Proposal</Link>
                     </DropdownMenuItem>
                     {proposal.status === "Approved" && (
                       <>
@@ -173,7 +139,7 @@ export function ProposalsTable() {
                       </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem onClick={() => handleDelete(proposal._id)} className="text-destructive">
                       <Trash className="mr-2 h-4 w-4" />
                       Delete Proposal
                     </DropdownMenuItem>

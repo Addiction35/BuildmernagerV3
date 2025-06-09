@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCreateProject } from "@/lib/hooks/projectQueries"
+import { useGetClients } from "@/lib/hooks/clientQueries"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "react-hot-toast";
 
@@ -20,6 +21,7 @@ import { toast } from "react-hot-toast";
 export function ProjectForm() {
   const router = useRouter()
   const { mutate, isLoading, isError, isSuccess } = useCreateProject();
+  const { data: clients, isLoading: clientsLoading } = useGetClients()
 
   const { control, handleSubmit, formState: { errors }, setValue } = useForm({
     defaultValues: {
@@ -85,7 +87,20 @@ const onSubmit = (data) => {
               <Controller
                 name="client"
                 control={control}
-                render={({ field }) => <Input id="client" {...field} placeholder="Enter client name" required />}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="client">
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients?.map((client) => (
+                        <SelectItem key={client._id} value={client._id}>
+                          {client.companyName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
             </div>
             <div className="space-y-2">

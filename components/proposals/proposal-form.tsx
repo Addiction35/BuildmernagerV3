@@ -12,6 +12,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EstimateItemsTable } from "@/components/estimates/estimate-items-table"
 import type { Group } from "@/types/estimate"
+import { useGetClients } from "@/lib/hooks/clientQueries"
+import { useProjects } from "@/lib/hooks/projectQueries"
+import { useEstimates } from "@/lib/hooks/EstimateQueries"
 
 interface ProposalFormData {
   id: string
@@ -44,88 +47,11 @@ const initialProposalData: ProposalFormData = {
   groups: [],
 }
 
-// Sample projects for dropdown
-const projects = [
-  { id: "PRJ001", name: "Riverside Apartments" },
-  { id: "PRJ002", name: "Downtown Office Renovation" },
-  { id: "PRJ003", name: "Hillside Residence" },
-  { id: "PRJ004", name: "Community Center" },
-  { id: "PRJ005", name: "Retail Store Fitout" },
-]
-
-// Sample clients for dropdown
-const clients = [
-  { id: "CLT001", name: "Riverside Development LLC" },
-  { id: "CLT002", name: "Metro Business Group" },
-  { id: "CLT003", name: "Johnson Family" },
-  { id: "CLT004", name: "Oakville Municipality" },
-  { id: "CLT005", name: "Fashion Outlet Inc." },
-]
-
-// Sample estimates for dropdown
-const estimates = [
-  {
-    id: "EST001",
-    name: "Riverside Apartments - Initial Estimate",
-    projectId: "PRJ001",
-    clientId: "CLT001",
-    groups: [
-      {
-        id: "group-1",
-        code: "A",
-        name: "Site Preparation",
-        description: "All site preparation activities",
-        quantity: 1,
-        unit: "LS",
-        rate: 0,
-        amount: 25000,
-        sections: [
-          {
-            id: "section-1",
-            code: "A.1",
-            name: "Demolition",
-            description: "Demolition of existing structures",
-            quantity: 1,
-            unit: "LS",
-            rate: 0,
-            amount: 15000,
-            subsections: [
-              {
-                id: "subsection-1",
-                code: "A.1.1",
-                name: "Building Demolition",
-                description: "Demolition of main building",
-                quantity: 1,
-                unit: "LS",
-                rate: 10000,
-                amount: 10000,
-              },
-              {
-                id: "subsection-2",
-                code: "A.1.2",
-                name: "Concrete Removal",
-                description: "Removal of existing concrete slabs and foundations",
-                quantity: 500,
-                unit: "SY",
-                rate: 10,
-                amount: 5000,
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "EST002",
-    name: "Downtown Office - Renovation Estimate",
-    projectId: "PRJ002",
-    clientId: "CLT002",
-    groups: [],
-  },
-]
-
 export function ProposalForm() {
+  const { data: projects, isLoading } = useProjects()
+const { data: clients, isLoading: clientsLoading } = useGetClients()
+const { data: estimates, isLoading: EstimatesLoading } = useEstimates()
+
   const router = useRouter()
   const searchParams = useSearchParams()
   const fromEstimateId = searchParams.get("from")
@@ -227,8 +153,8 @@ export function ProposalForm() {
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
+                {projects?.map((project) => (
+                  <SelectItem key={project._id} value={project._id}>
                     {project.name}
                   </SelectItem>
                 ))}
@@ -243,9 +169,9 @@ export function ProposalForm() {
                 <SelectValue placeholder="Select a client" />
               </SelectTrigger>
               <SelectContent>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
+                {clients?.map((client) => (
+                  <SelectItem key={client._id} value={client._id}>
+                    {client.primaryContact}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -291,8 +217,8 @@ export function ProposalForm() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
-                {estimates.map((estimate) => (
-                  <SelectItem key={estimate.id} value={estimate.id}>
+                {estimates?.map((estimate) => (
+                  <SelectItem key={estimate._id} value={estimate._id}>
                     {estimate.name}
                   </SelectItem>
                 ))}
