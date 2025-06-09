@@ -1,7 +1,33 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowUpRight, Building2, FileText, Receipt, AlertTriangle, ShoppingCart, Wallet, Users } from "lucide-react"
+'use client'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ArrowUpRight,
+  Building2,
+  FileText,
+  Receipt,
+  AlertTriangle,
+  ShoppingCart,
+  Wallet,
+  Users,
+} from "lucide-react";
+import { useStats } from "@/lib/hooks/DashBoardQueries";
 
 export function DashboardStats() {
+  const { data: stats, isLoading, error } = useStats();
+
+  if (isLoading) {
+    return <p className="text-muted-foreground">Loading dashboard stats...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">Failed to load dashboard stats.</p>;
+  }
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -10,7 +36,9 @@ export function DashboardStats() {
           <Building2 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">12</div>
+          <div className="text-2xl font-bold">
+            {stats?.activeProjects ?? 0}
+          </div>
           <p className="text-xs text-muted-foreground">+2 from last month</p>
         </CardContent>
       </Card>
@@ -21,7 +49,9 @@ export function DashboardStats() {
           <FileText className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">8</div>
+          <div className="text-2xl font-bold">
+            {stats?.pendingApprovals ?? 0}
+          </div>
           <div className="flex items-center text-xs text-muted-foreground">
             <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
             <span>+3 this week</span>
@@ -35,8 +65,12 @@ export function DashboardStats() {
           <Receipt className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">$24,565</div>
-          <p className="text-xs text-muted-foreground">5 bills pending payment</p>
+          <div className="text-2xl font-bold">
+            ${stats?.unpaidBills?.toLocaleString() ?? "0"}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {stats?.pendingBillCount ?? 0} bills pending payment
+          </p>
         </CardContent>
       </Card>
 
@@ -46,8 +80,12 @@ export function DashboardStats() {
           <AlertTriangle className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">7</div>
-          <p className="text-xs text-muted-foreground">Across 4 projects</p>
+          <div className="text-2xl font-bold">
+            {stats?.overdueTasks ?? 0}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Across {stats?.overdueProjects ?? 0} projects
+          </p>
         </CardContent>
       </Card>
 
@@ -57,8 +95,12 @@ export function DashboardStats() {
           <ShoppingCart className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">7</div>
-          <p className="text-xs text-muted-foreground">3 awaiting delivery</p>
+          <div className="text-2xl font-bold">
+            {stats?.purchaseOrders ?? 0}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {stats?.awaitingDelivery ?? 0} awaiting delivery
+          </p>
         </CardContent>
       </Card>
 
@@ -68,7 +110,9 @@ export function DashboardStats() {
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">$18,400</div>
+          <div className="text-2xl font-bold">
+            ${stats?.wages?.toLocaleString() ?? "0"}
+          </div>
           <p className="text-xs text-muted-foreground">This month</p>
         </CardContent>
       </Card>
@@ -79,10 +123,12 @@ export function DashboardStats() {
           <Wallet className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">$6,530</div>
+          <div className="text-2xl font-bold">
+            ${stats?.expenses?.toLocaleString() ?? "0"}
+          </div>
           <p className="text-xs text-muted-foreground">This month</p>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
