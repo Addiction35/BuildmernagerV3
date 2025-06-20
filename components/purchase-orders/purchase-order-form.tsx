@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,10 +12,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { useProjects } from "@/lib/hooks/projectQueries"
+import axiosInstance from "@/lib/axios"
 
 export function PurchaseOrderForm() {
   const router = useRouter()
   const { data: projects, isLoading } = useProjects()
+  const [vendorQuery, setVendorQuery] = useState("")
+  const [vendorSuggestions, setVendorSuggestions] = useState([])
+  
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      if (vendorQuery.length > 1) {
+        fetchVendors(vendorQuery)
+      }
+    }, 300)
+    return () => clearTimeout(delay)
+  }, [vendorQuery])
+  
+  const fetchVendors = async (query) => {
+    try {
+      const res = await axiosInstance.get("/vendors/search", {
+        params: { q: query }
+      })
+      setVendorSuggestions(res.data)
+    } catch (err) {
+      console.error("Error fetching vendor suggestions:", err)
+    }
+  }
+  
+
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -172,52 +197,85 @@ export function PurchaseOrderForm() {
 
         {/* VENDOR TAB */}
         <TabsContent value="vendor" className="space-y-4 pt-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="vendor-name">Vendor Name</Label>
-              <Input
-                id="vendor-name"
-                value={formData.vendorName}
-                onChange={(e) => handleChange("vendorName", e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vendor-contact">Contact Person</Label>
-              <Input
-                id="vendor-contact"
-                value={formData.vendorContact}
-                onChange={(e) => handleChange("vendorContact", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vendor-email">Email</Label>
-              <Input
-                id="vendor-email"
-                type="email"
-                value={formData.vendorEmail}
-                onChange={(e) => handleChange("vendorEmail", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vendor-phone">Phone</Label>
-              <Input
-                id="vendor-phone"
-                value={formData.vendorPhone}
-                onChange={(e) => handleChange("vendorPhone", e.target.value)}
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="vendor-address">Address</Label>
-              <Textarea
-                id="vendor-address"
-                value={formData.vendorAddress}
-                onChange={(e) => handleChange("vendorAddress", e.target.value)}
-              />
-            </div>
-          </div>
-        </TabsContent>
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    {/* Vendor Name with autocomplete */}
+    <div className="space-y-2 relative">
+      <Label htmlFor="vendor-name">Vendor Name</Label>
+      <Input
+        id="vendor-name"
+        value={formData.vendorName}
+        onChange={(e) => {
+          const value = e.target.value
+          handleChange("vendorName", value)
+          setVendorQuery(value) // state for search
+        }}
+        autoComplete="off"
+        required
+      />
+      {vendorSuggestions.length > 0 && (
+        <ul className="absolute z-20 w-full bg-white border border-gray-200 rounded-md mt-1 max-h-60 overflow-y-auto shadow-md">
+          {vendorSuggestions.map((vendor) => (
+            <li
+              key={vendor._id}
+              onClick={() => {
+                handleChange("vendorName", vendor.companyName)
+                handleChange("vendorContact", vendor.contactPerson)
+                handleChange("vendorEmail", vendor.email)
+                handleChange("vendorPhone", vendor.phone)
+                handleChange("vendorAddress", vendor.address)
+                setVendorSuggestions([])
+              }}
+              className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+            >
+              {vendor.companyName} — {vendor.contactPerson}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
 
+    {/* Contact Person */}
+    <div className="space-y-2">
+      <Label htmlFor="vendor-contact">Contact Person</Label>
+      <Input
+        id="vendor-contact"
+        value={formData.vendorContact}
+        onChange={(e) => handleChange("vendorContact", e.target.value)}
+      />
+    </div>
+
+    {/* Email */}
+    <div className="space-y-2">
+      <Label htmlFor="vendor-email">Email</Label>
+      <Input
+        id="vendor-email"
+        type="email"
+        value={formData.vendorEmail}
+        onChange={(e) => handleChange("vendorEmail", e.target.value)}
+      />
+    </div>
+
+    {/* Phone */}
+    <div className="space-y-2">
+      <Label htmlFor="vendor-phone">Phone</Label>
+      <Input
+        id="vendor-phone"
+        value={formData.vendorPhone}
+        onChange={(e) => handleChange("vendorPhone", e.target.value)}
+      />
+    </div>
+
+    {/* Address */}
+    <div className="space-y-2 md:col-span-2">
+      <Label htmlFor="vendor-address">Address</Label>
+      <Textarea
+        id="vendor-address"
+        value={formData.vendorAddress}
+        onChange={(e) => handleChange("vendorAddress", e.target.value)}
+      />
+    </div>
+  </div>
+</TabsContent>
         {/* ITEMS TAB */}
         <TabsContent value="items" className="space-y-4 pt-4">
           <Card>
