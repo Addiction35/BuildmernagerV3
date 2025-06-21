@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { useProjects } from "@/lib/hooks/projectQueries"
 import axiosInstance from "@/lib/axios"
+import { AutocompleteInput } from "../AutoCompleteItems"
 
 export function PurchaseOrderForm() {
   const router = useRouter()
@@ -277,87 +278,98 @@ export function PurchaseOrderForm() {
   </div>
 </TabsContent>
         {/* ITEMS TAB */}
-        <TabsContent value="items" className="space-y-4 pt-4">
-          <Card>
-            <CardContent className="p-4 space-y-4">
-              <div className="grid grid-cols-12 gap-4 font-medium">
-                <div className="col-span-5">Description</div>
-                <div className="col-span-2 text-center">Quantity</div>
-                <div className="col-span-2">Unit</div>
-                <div className="col-span-2 text-right">Unit Price</div>
-                <div className="col-span-1"></div>
-              </div>
+<TabsContent value="items" className="space-y-4 pt-4">
+  <Card>
+    <CardContent className="p-4 space-y-4">
+      <div className="grid grid-cols-12 gap-4 font-medium">
+        <div className="col-span-5">Description</div>
+        <div className="col-span-2 text-center">Quantity</div>
+        <div className="col-span-2">Unit</div>
+        <div className="col-span-2 text-right">Unit Price</div>
+        <div className="col-span-1"></div>
+      </div>
 
-              {items.map((item) => (
-                <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-5">
-                    <Input
-                      placeholder="Item description"
-                      value={item.description}
-                      onChange={(e) => handleItemChange(item.id, "description", e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Input
-                      type="number"
-                      className="text-center"
-                      value={item.quantity}
-                      min={1}
-                      onChange={(e) => handleItemChange(item.id, "quantity", e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Input
-                      placeholder="Unit"
-                      value={item.unit}
-                      onChange={(e) => handleItemChange(item.id, "unit", e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Input
-                      type="number"
-                      className="text-right"
-                      value={item.unitPrice}
-                      min={0}
-                      step="0.01"
-                      onChange={(e) => handleItemChange(item.id, "unitPrice", e.target.value)}
-                    />
-                  </div>
-                  <div className="col-span-1 flex justify-end">
-                    <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(item.id)} disabled={items.length === 1}>
-                      ×
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                Add Item
-              </Button>
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-end">
-            <div className="w-full max-w-sm space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Tax (10%)</span>
-                <span>${tax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Shipping</span>
-                <span>${shipping.toFixed(2)}</span>
-              </div>
-              <div className="border-t pt-2 mt-2 flex justify-between font-medium">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-            </div>
+      {items.map((item) => (
+        <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
+          <div className="col-span-5">
+            <AutocompleteInput
+              value={item.description}
+              onChange={(val) => handleItemChange(item.id, "description", val)}
+              onSelect={(selectedItem) => {
+                handleItemChange(item.id, "description", selectedItem.description)
+                handleItemChange(item.id, "unit", selectedItem.unit)
+                handleItemChange(item.id, "unitPrice", selectedItem.unitPrice.toString())
+              }}
+            />
           </div>
-        </TabsContent>
+          <div className="col-span-2">
+            <Input
+              type="number"
+              className="text-center"
+              value={item.quantity}
+              min={1}
+              onChange={(e) => handleItemChange(item.id, "quantity", e.target.value)}
+            />
+          </div>
+          <div className="col-span-2">
+            <Input
+              placeholder="Unit"
+              value={item.unit}
+              onChange={(e) => handleItemChange(item.id, "unit", e.target.value)}
+            />
+          </div>
+          <div className="col-span-2">
+            <Input
+              type="number"
+              className="text-right"
+              value={item.unitPrice}
+              min={0}
+              step="0.01"
+              onChange={(e) => handleItemChange(item.id, "unitPrice", e.target.value)}
+            />
+          </div>
+          <div className="col-span-1 flex justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => removeItem(item.id)}
+              disabled={items.length === 1}
+            >
+              ×
+            </Button>
+          </div>
+        </div>
+      ))}
+
+      <Button type="button" variant="outline" size="sm" onClick={addItem}>
+        Add Item
+      </Button>
+    </CardContent>
+  </Card>
+
+  <div className="flex justify-end">
+    <div className="w-full max-w-sm space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>Subtotal</span>
+        <span>${subtotal.toFixed(2)}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span>Tax (10%)</span>
+        <span>${tax.toFixed(2)}</span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span>Shipping</span>
+        <span>${shipping.toFixed(2)}</span>
+      </div>
+      <div className="border-t pt-2 mt-2 flex justify-between font-medium">
+        <span>Total</span>
+        <span>${total.toFixed(2)}</span>
+      </div>
+    </div>
+  </div>
+</TabsContent>
+
       </Tabs>
 
       <div className="mt-6 flex justify-end gap-4">
