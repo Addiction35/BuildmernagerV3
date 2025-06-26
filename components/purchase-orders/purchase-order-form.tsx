@@ -39,6 +39,8 @@ const formSchema = z.object({
   poNumber: z.string().min(1),
   reference: z.string().optional(),
   projectId: z.string().min(1),
+  company: z.string().min(1),
+  billed: z.enum(["billed", "unbilled"]),
   status: z.enum(["pending", "in-transit", "delivered"]),
   date: z.date(),
   deliveryDate: z.date(),
@@ -78,6 +80,8 @@ export function PurchaseOrderForm() {
       date: new Date(),
       deliveryDate: new Date(),
       status: "pending",
+      billed: "unbilled",
+      company: "",
       deliveryAddress: "",
       notes: "",
       vendorName: "",
@@ -144,35 +148,68 @@ export function PurchaseOrderForm() {
         </TabsList>
 
         {/* GENERAL TAB */}
-        <TabsContent value="general" className="space-y-4 pt-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>PO Number</Label>
-              <Input {...register("poNumber")} />
-              {errors.poNumber && <p className="text-red-500 text-sm">{errors.poNumber.message}</p>}
-            </div>
+        <TabsContent value="general" className="space-y-6 pt-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-            <Controller
-              control={control}
-              name="date"
-              render={({ field }) => (
-                <DatePicker value={field.value} onChange={field.onChange} />
+            {/* PO Number */}
+            <div className="space-y-2">
+              <Label htmlFor="poNumber">PO Number</Label>
+              <Input id="poNumber" {...register("poNumber")} />
+              {errors.poNumber && (
+                <p className="text-sm text-red-500">{errors.poNumber.message}</p>
               )}
-            />
-
-            <div className="space-y-2">
-              <Label>Reference</Label>
-              <Input {...register("reference")} />
             </div>
 
+            {/* Start & Delivery Dates in One Row */}
+            <div className="flex flex-col md:flex-row gap-8 py-2.5 w-full">
+              <div className="space-y-2 flex flex-col">
+                <Label htmlFor="start-date">Start Date</Label>
+                <Controller
+                  name="date"
+                  control={control}
+                  defaultValue={null}
+                  render={({ field }) => (
+                    <DatePicker
+                      id="start-date"
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+              <div className="space-y-2  flex flex-col">
+                <Label htmlFor="delivery-date">Delivery Date</Label>
+                <Controller
+                  name="deliveryDate"
+                  control={control}
+                  defaultValue={null}
+                  render={({ field }) => (
+                    <DatePicker
+                      id="delivery-date"
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+
+
+            {/* Reference (optional) */}
             <div className="space-y-2">
-              <Label>Project</Label>
+              <Label htmlFor="reference">Reference</Label>
+              <Input id="reference" {...register("reference")} />
+            </div>
+
+            {/* Project Select */}
+            <div className="space-y-2">
+              <Label htmlFor="projectId">Project</Label>
               <Controller
                 control={control}
                 name="projectId"
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
+                    <SelectTrigger id="projectId">
                       <SelectValue placeholder="Select a project" />
                     </SelectTrigger>
                     <SelectContent>
@@ -185,25 +222,20 @@ export function PurchaseOrderForm() {
                   </Select>
                 )}
               />
-              {errors.projectId && <p className="text-red-500 text-sm">{errors.projectId.message}</p>}
+              {errors.projectId && (
+                <p className="text-sm text-red-500">{errors.projectId.message}</p>
+              )}
             </div>
 
-            <Controller
-              control={control}
-              name="deliveryDate"
-              render={({ field }) => (
-                <DatePicker value={field.value} onChange={field.onChange} />
-              )}
-            />
-
+            {/* Status Select */}
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label htmlFor="status">Status</Label>
               <Controller
                 control={control}
                 name="status"
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
+                    <SelectTrigger id="status">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -216,14 +248,58 @@ export function PurchaseOrderForm() {
               />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
-              <Label>Delivery Address</Label>
-              <Textarea {...register("deliveryAddress")} />
+            {/* Company Select */}
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <Controller
+                control={control}
+                name="company"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="company">
+                      <SelectValue placeholder="Select company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AcmeCo">Acme Co.</SelectItem>
+                      <SelectItem value="Globex">Globex Corporation</SelectItem>
+                      <SelectItem value="Soylent">Soylent Ltd.</SelectItem>
+                      <SelectItem value="Initech">Initech</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
+            {/* Billed Status */}
+            <div className="space-y-2">
+              <Label htmlFor="billed">Billed Status</Label>
+              <Controller
+                control={control}
+                name="billed"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="billed">
+                      <SelectValue placeholder="Select billing status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="billed">Billed</SelectItem>
+                      <SelectItem value="unbilled">Unbilled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            {/* Delivery Address */}
             <div className="space-y-2 md:col-span-2">
-              <Label>Notes</Label>
-              <Textarea {...register("notes")} />
+              <Label htmlFor="deliveryAddress">Delivery Address</Label>
+              <Textarea id="deliveryAddress" {...register("deliveryAddress")} />
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" {...register("notes")} />
             </div>
           </div>
         </TabsContent>

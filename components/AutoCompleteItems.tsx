@@ -68,7 +68,7 @@ export function AutocompleteInput({ value, onChange, onSelect }: Props) {
         <div className="absolute z-10 w-full max-h-64 overflow-auto rounded-md border bg-white shadow-md text-sm">
           {results.map((item) => (
             <div
-              key={item.id}
+              key={item._id}
               onMouseDown={(e) => {
                 e.preventDefault()
                 handleSelect(item)

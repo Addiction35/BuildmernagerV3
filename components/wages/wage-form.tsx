@@ -1,281 +1,454 @@
 "use client"
-
-import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useForm, useFieldArray, Controller, useWatch } from "react-hook-form"
+import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
+import { useProjects } from "@/lib/hooks/projectQueries"
+import axiosInstance from "@/lib/axios"
 import { AutocompleteInput } from "../AutoCompleteItems"
+import { useCreatePO } from "@/lib/hooks/purchase-orders"
 
 const itemSchema = z.object({
-  id: z.number(),
-  description: z.string().min(1, "Required"),
+  description: z.string().min(1),
   quantity: z.coerce.number().min(1),
   unit: z.string(),
-  unitPrice: z.coerce.number().min(0),
+  unitPrice: z.coerce.number().nonnegative(),
 })
 
 const formSchema = z.object({
+  poNumber: z.string().min(1),
   reference: z.string().optional(),
-  date: z.date().optional(),
-  vendor: z.string().min(1),
-  project: z.string().min(1),
+  projectId: z.string().min(1),
   company: z.string().min(1),
   billed: z.enum(["billed", "unbilled"]),
-  status: z.string().min(1),
+  status: z.enum(["pending", "in-transit", "delivered"]),
+  date: z.date(),
+  deliveryDate: z.date(),
+  deliveryAddress: z.string(),
   notes: z.string().optional(),
-  vatRate: z.coerce.number().min(0).max(100),
+  vendorName: z.string().min(1),
+  vendorContact: z.string().optional(),
+  vendorEmail: z.string().optional(),
+  vendorPhone: z.string().optional(),
+  vendorAddress: z.string().optional(),
   items: z.array(itemSchema).min(1),
 })
 
 
-type FormData = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>
 
 export function WageForm() {
   const router = useRouter()
+  const { data: projects } = useProjects()
+  const { mutate, isLoading: isCreating } = useCreatePO()
+  const [vendorQuery, setVendorQuery] = useState("")
+  const [vendorSuggestions, setVendorSuggestions] = useState<any[]>([])
+
   const {
+    control,
     register,
     handleSubmit,
-    control,
     setValue,
-    getValues,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      vatRate: 5,
+      poNumber: "",
+      reference: "",
+      projectId: "",
+      date: new Date(),
+      deliveryDate: new Date(),
+      status: "pending",
       billed: "unbilled",
       company: "",
-      items: [{ id: 1, description: "", quantity: 1, unit: "", unitPrice: 0 }],
+      deliveryAddress: "",
+      notes: "",
+      vendorName: "",
+      vendorContact: "",
+      vendorEmail: "",
+      vendorPhone: "",
+      vendorAddress: "",
+      items: [{ description: "", quantity: 1, unit: "", unitPrice: 0 }],
     },
   })
 
-  const { fields, append, remove } = useFieldArray({ name: "items", control })
-  const watchedItems = useWatch({ control, name: "items" })
-  const watchedVatRate = useWatch({ control, name: "vatRate" }) || 0
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "items",
+  })
 
-  const subtotal = watchedItems?.reduce((sum, item) => {
-    const qty = Number(item.quantity) || 0
-    const price = Number(item.unitPrice) || 0
-    return sum + qty * price
-  }, 0) || 0
+  const items = watch("items")
+  const subtotal = items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0)
+  const tax = subtotal * 0.1
+  const shipping = 0
+  const total = subtotal + tax + shipping
 
-  const vatAmount = (subtotal * watchedVatRate) / 100
-  const totalWithVat = subtotal + vatAmount
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      if (vendorQuery.length > 1) {
+        fetchVendors(vendorQuery)
+      }
+    }, 300)
+    return () => clearTimeout(delay)
+  }, [vendorQuery])
 
-  const onSubmit = async (data: FormData) => {
-    console.log("Submitting:", data)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    router.push("/wages")
+  const fetchVendors = async (query: string) => {
+    try {
+      const res = await axiosInstance.get("/vendors/search", {
+        params: { q: query },
+      })
+      setVendorSuggestions(res.data)
+    } catch (err) {
+      console.error("Vendor fetch error:", err)
+    }
+  }
+
+  const onSubmit = (data: FormValues) => {
+    const payload = {
+      ...data,
+      subtotal,
+      tax,
+      total,
+    }
+
+    mutate(payload, {
+      onSuccess: () => router.push("/purchase-orders"),
+      onError: (err) => console.error("Create failed:", err),
+    })
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="reference">Reference Number</Label>
-          <Input id="reference" {...register("reference")} placeholder="Enter reference number" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="date">Wage Date</Label>
-          <Controller control={control} name="date" render={({ field }) => <DatePicker {...field} />} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="vendor">Vendor</Label>
-          <Input id="vendor" {...register("vendor")} placeholder="Enter vendor name" required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="project">Project</Label>
-          <Controller
-            control={control}
-            name="project"
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger id="project">
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {["PRJ001", "PRJ002", "PRJ003", "PRJ004", "PRJ005"].map((val) => (
-                    <SelectItem key={val} value={val}>
-                      {val}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="company">Company</Label>
-          <Controller
-            control={control}
-            name="company"
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger id="company">
-                  <SelectValue placeholder="Select company" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="AcmeCo">Acme Co.</SelectItem>
-                  <SelectItem value="Globex">Globex Corporation</SelectItem>
-                  <SelectItem value="Soylent">Soylent Ltd.</SelectItem>
-                  <SelectItem value="Initech">Initech</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="vendor">Vendor</TabsTrigger>
+          <TabsTrigger value="items">Items</TabsTrigger>
+        </TabsList>
 
-        <div className="space-y-2">
-          <Label htmlFor="billed">Billed Status</Label>
-          <Controller
-            control={control}
-            name="billed"
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger id="billed">
-                  <SelectValue placeholder="Select billing status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="billed">Billed</SelectItem>
-                  <SelectItem value="unbilled">Unbilled</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Controller
-            control={control}
-            name="status"
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger id="status">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {["pending", "approved", "rejected"].map((val) => (
-                    <SelectItem key={val} value={val}>
-                      {val}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-      </div>
+        {/* GENERAL TAB */}
+        <TabsContent value="general" className="space-y-6 pt-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-      <div className="space-y-2">
-        <Label>Wage Items</Label>
-        <Card>
-          <CardContent className="p-4 space-y-4">
-            <div className="grid grid-cols-12 gap-4 font-medium">
-              <div className="col-span-5">Description</div>
-              <div className="col-span-2 text-center">Quantity</div>
-              <div className="col-span-2">Unit</div>
-              <div className="col-span-2 text-right">Unit Price</div>
-              <div className="col-span-1"></div>
+            {/* PO Number */}
+            <div className="space-y-2">
+              <Label htmlFor="poNumber">PO Number</Label>
+              <Input id="poNumber" {...register("poNumber")} />
+              {errors.poNumber && (
+                <p className="text-sm text-red-500">{errors.poNumber.message}</p>
+              )}
             </div>
 
-            {fields.map((item, index) => (
-              <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                <div className="col-span-5">
-                  <Controller
-                    control={control}
-                    name={`items.${index}.description`}
-                    render={({ field }) => (
-                      <AutocompleteInput
-                        value={field.value}
-                        onChange={field.onChange}
-                        onSelect={(selectedItem) => {
-                          field.onChange(selectedItem.description)
-                          setValue(`items.${index}.unit`, selectedItem.unit)
-                          setValue(`items.${index}.unitPrice`, selectedItem.unitPrice)
-                        }}
-                      />
-                    )}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Input
-                    type="number"
-                    className="text-center"
-                    {...register(`items.${index}.quantity`)}
-                    min={1}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Input
-                    placeholder="Unit"
-                    {...register(`items.${index}.unit`)}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Input
-                    type="number"
-                    className="text-right"
-                    {...register(`items.${index}.unitPrice`)}
-                    min={0}
-                    step="0.01"
-                  />
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)} disabled={fields.length === 1}>
-                    ×
-                  </Button>
-                </div>
-              </div>
-            ))}
-
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ id: fields.length + 1, description: "", quantity: 1, unit: "", unitPrice: 0 })}>
-              Add Item
-            </Button>
-
-            <hr className="my-4" />
-
-            <div className="flex flex-col items-end space-y-2">
-              <div className="flex items-center gap-4">
-                <Label htmlFor="vatRate">VAT (%)</Label>
-                <Input
-                  id="vatRate"
-                  type="number"
-                  {...register("vatRate")}
-                  className="w-24 text-right"
-                  min={0}
-                  max={100}
-                  step="0.01"
+            {/* Start & Delivery Dates in One Row */}
+            <div className="flex flex-col md:flex-row gap-8 py-2.5 w-full">
+              <div className="space-y-2 flex flex-col">
+                <Label htmlFor="start-date">Start Date</Label>
+                <Controller
+                  name="date"
+                  control={control}
+                  defaultValue={null}
+                  render={({ field }) => (
+                    <DatePicker
+                      id="start-date"
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
-              <div className="text-sm text-muted-foreground">Subtotal: ${subtotal.toFixed(2)}</div>
-              <div className="text-sm text-muted-foreground">VAT: ${vatAmount.toFixed(2)}</div>
-              <div className="text-lg font-bold">Total: ${totalWithVat.toFixed(2)}</div>
+              <div className="space-y-2  flex flex-col">
+                <Label htmlFor="delivery-date">Delivery Date</Label>
+                <Controller
+                  name="deliveryDate"
+                  control={control}
+                  defaultValue={null}
+                  render={({ field }) => (
+                    <DatePicker
+                      id="delivery-date"
+                      selected={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes</Label>
-        <Textarea id="notes" {...register("notes")} placeholder="Enter any additional notes" className="min-h-32" />
-      </div>
 
-      <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={() => router.push("/wages")}>
+            {/* Reference (optional) */}
+            <div className="space-y-2">
+              <Label htmlFor="reference">Reference</Label>
+              <Input id="reference" {...register("reference")} />
+            </div>
+
+            {/* Project Select */}
+            <div className="space-y-2">
+              <Label htmlFor="projectId">Project</Label>
+              <Controller
+                control={control}
+                name="projectId"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="projectId">
+                      <SelectValue placeholder="Select a project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects?.map((project) => (
+                        <SelectItem key={project._id} value={project._id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.projectId && (
+                <p className="text-sm text-red-500">{errors.projectId.message}</p>
+              )}
+            </div>
+
+            {/* Status Select */}
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-transit">In Transit</SelectItem>
+                      <SelectItem value="delivered">Delivered</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            {/* Company Select */}
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <Controller
+                control={control}
+                name="company"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="company">
+                      <SelectValue placeholder="Select company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AcmeCo">Acme Co.</SelectItem>
+                      <SelectItem value="Globex">Globex Corporation</SelectItem>
+                      <SelectItem value="Soylent">Soylent Ltd.</SelectItem>
+                      <SelectItem value="Initech">Initech</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            {/* Billed Status */}
+            <div className="space-y-2">
+              <Label htmlFor="billed">Billed Status</Label>
+              <Controller
+                control={control}
+                name="billed"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="billed">
+                      <SelectValue placeholder="Select billing status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="billed">Billed</SelectItem>
+                      <SelectItem value="unbilled">Unbilled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+            {/* Delivery Address */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="deliveryAddress">Delivery Address</Label>
+              <Textarea id="deliveryAddress" {...register("deliveryAddress")} />
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" {...register("notes")} />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* VENDOR TAB */}
+        <TabsContent value="vendor" className="space-y-4 pt-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2 relative">
+              <Label>Vendor Name</Label>
+              <Input
+                {...register("vendorName")}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setValue("vendorName", val)
+                  setVendorQuery(val)
+                }}
+              />
+              {vendorSuggestions.length > 0 && (
+                <ul className="absolute z-20 w-full bg-white border rounded mt-1 max-h-60 overflow-y-auto shadow">
+                  {vendorSuggestions.map((vendor) => (
+                    <li
+                      key={vendor._id}
+                      className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setValue("vendorName", vendor.companyName)
+                        setValue("vendorContact", vendor.contactPerson)
+                        setValue("vendorEmail", vendor.email)
+                        setValue("vendorPhone", vendor.phone)
+                        setValue("vendorAddress", vendor.address)
+                        setVendorSuggestions([])
+                      }}
+                    >
+                      {vendor.companyName} — {vendor.contactPerson}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Contact Person</Label>
+              <Input {...register("vendorContact")} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" {...register("vendorEmail")} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input {...register("vendorPhone")} />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label>Address</Label>
+              <Textarea {...register("vendorAddress")} />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ITEMS TAB */}
+        <TabsContent value="items" className="space-y-4 pt-4">
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <div className="grid grid-cols-12 gap-4 font-medium">
+                <div className="col-span-5">Description</div>
+                <div className="col-span-2 text-center">Quantity</div>
+                <div className="col-span-2">Unit</div>
+                <div className="col-span-2 text-right">Unit Price</div>
+                <div className="col-span-1" />
+              </div>
+
+              {fields.map((item, index) => (
+                <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
+                  <div className="col-span-5">
+                    <Controller
+                      control={control}
+                      name={`items.${index}.description`}
+                      render={({ field }) => (
+                        <AutocompleteInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          onSelect={(selectedItem) => {
+                            setValue(`items.${index}.description`, selectedItem.description)
+                            setValue(`items.${index}.unit`, selectedItem.unit)
+                            setValue(`items.${index}.unitPrice`, selectedItem.unitPrice)
+                          }}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Input type="number" {...register(`items.${index}.quantity`)} />
+                  </div>
+                  <div className="col-span-2">
+                    <Input {...register(`items.${index}.unit`)} />
+                  </div>
+                  <div className="col-span-2">
+                    <Input type="number" step="0.01" {...register(`items.${index}.unitPrice`)} />
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => remove(index)}
+                      disabled={fields.length === 1}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ description: "", quantity: 1, unit: "", unitPrice: 0 })}>
+                Add Item
+              </Button>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
+            <div className="w-full max-w-sm space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Tax (10%)</span>
+                <span>${tax.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Shipping</span>
+                <span>${shipping.toFixed(2)}</span>
+              </div>
+              <div className="border-t pt-2 mt-2 flex justify-between font-medium">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <div className="mt-6 flex justify-end gap-4">
+        <Button type="button" variant="outline" onClick={() => router.push("/purchase-orders")}>
           Cancel
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating..." : "Create Wage"}
+        <Button type="submit" disabled={isCreating}>
+          {isCreating ? "Creating..." : "Create Purchase Order"}
         </Button>
       </div>
     </form>
