@@ -1,3 +1,4 @@
+// app/context/AuthContext.jsx or similar
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -5,65 +6,13 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import axiosInstance from '@/lib/api/axiosInstance'
 
-
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Load user from localStorage
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser)
-        if (parsedUser?.userId) {
-          setUser(parsedUser)
-        }
-      } catch (e) {
-        console.error('Invalid localStorage user:', e)
-      }
-    }
-    setIsLoading(false)
-  }, [])
-
-  // Sync across tabs
-  useEffect(() => {
-    const syncUserAcrossTabs = (event) => {
-      if (event.key === 'user') {
-        if (event.newValue) {
-          try {
-            setUser(JSON.parse(event.newValue))
-          } catch {
-            setUser(null)
-          }
-        } else {
-          setUser(null)
-        }
-      }
-    }
-
-    window.addEventListener('storage', syncUserAcrossTabs)
-    return () => window.removeEventListener('storage', syncUserAcrossTabs)
-  }, [])
-
-  // Manual login load (e.g., after login mutation)
-  const login = () => {
-    const stored = localStorage.getItem('user')
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        if (parsed?.userId) {
-          setUser(parsed)
-        }
-      } catch (e) {
-        console.error('Login parsing failed:', e)
-      }
-    }
-  }
-
-  // Mutation for logging out
+  // Logout mutation
   const { mutate: logout } = useMutation({
     mutationFn: async () => {
       return axiosInstance.get('/auth/logout')
@@ -79,6 +28,89 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', err)
     },
   })
+
+  // Validate and load user on first mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user')
+    let shouldLogout = false
+
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser)
+
+        // Basic field validation
+        if (!parsedUser?.userId) {
+          shouldLogout = true
+        }
+
+        // Optional: check expiry
+        if (parsedUser?.expiresAt && Date.now() > parsedUser.expiresAt) {
+          toast.warning('Session expired')
+          shouldLogout = true
+        }
+
+        if (!shouldLogout) {
+          setUser(parsedUser)
+        }
+      } catch (e) {
+        console.error('Invalid user in localStorage:', e)
+        shouldLogout = true
+      }
+    } else {
+      shouldLogout = true
+    }
+
+    if (shouldLogout) {
+      localStorage.removeItem('user')
+      setUser(null)
+    }
+
+    setIsLoading(false)
+  }, [])
+
+  // Sync user state across browser tabs
+  useEffect(() => {
+    const syncUserAcrossTabs = (event) => {
+      if (event.key === 'user') {
+        if (event.newValue) {
+          try {
+            const newUser = JSON.parse(event.newValue)
+            if (newUser?.userId) {
+              setUser(newUser)
+            } else {
+              logout()
+            }
+          } catch {
+            logout()
+          }
+        } else {
+          logout()
+        }
+      }
+    }
+
+    window.addEventListener('storage', syncUserAcrossTabs)
+    return () => window.removeEventListener('storage', syncUserAcrossTabs)
+  }, [logout])
+
+  // Manual login state refresh (after successful login)
+  const login = () => {
+    const stored = localStorage.getItem('user')
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        if (parsed?.userId) {
+          setUser(parsed)
+        } else {
+          logout()
+        }
+      } catch {
+        logout()
+      }
+    } else {
+      logout()
+    }
+  }
 
   const isAuthenticated = !!user?.userId
 
