@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 import Cookies from 'js-cookie';
+import { useAuth } from "@/app/context/authContext";
 
 // Type definitions
 interface LoginFormProps extends React.ComponentProps<"div"> {
@@ -26,6 +27,7 @@ interface LoginFormData {
 
 export function LoginForm({ className, ...props }: LoginFormProps) {
   const router = useRouter();
+  const { login } = useAuth() || { login: () => {} }; // Fallback if useAuth is not defined
   const [authError, setAuthError] = useState<string | null>(null);
 
   const { toast } = useToast();
@@ -76,10 +78,8 @@ const loginMutation = useMutation({
     },
     onSuccess: (data) => {
       if (data) {
-        // Set the received token in a cookie
-        Cookies.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'Strict' });
-        Cookies.set("user_data", JSON.stringify(data.user), { expires: 7, secure: true, sameSite: "Strict" });
-        
+
+        login?.(); // Call login function from context       
         toast({
           title: "Login successful",
           description: "Redirecting to dashboard...",
