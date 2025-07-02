@@ -16,12 +16,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
+import { useAuth } from "@/app/context/authContext"
 
 interface HeaderProps {
   user: any  // Define the type of your user data (adjust based on your actual data)
 }
-export const Header = ({ user }: HeaderProps) => {
+export const Header = () => {
+  const {isAuthenticated, user,} = useAuth() || {isAuthenticated: false}
   const [notifications, setNotifications] = useState([
     { id: 1, title: "New project assigned", read: false, time: "5 min ago" },
     { id: 2, title: "Estimate approved", read: false, time: "1 hour ago" },

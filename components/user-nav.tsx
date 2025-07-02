@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Settings, User } from "lucide-react"
 import { useLogout } from "@/hooks/useLogout"
+import { useAuth } from "@/app/context/authContext"
 
 interface UserNavProps {
   name: string
@@ -20,6 +21,7 @@ interface UserNavProps {
 }
 
 export function UserNav({ name, email, avatarUrl }: UserNavProps) {
+   const { logout } = useAuth() || {isAuthenticated: false}
   const logoutMutation = useLogout();
   return (
     <DropdownMenu>
@@ -56,9 +58,7 @@ export function UserNav({ name, email, avatarUrl }: UserNavProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
     <DropdownMenuItem
-      onClick={() => {
-        logoutMutation.mutate();
-      }}
+      onClick={() => logout?.()}
       className="cursor-pointer"
     >
       <LogOut className="mr-2 h-4 w-4" />

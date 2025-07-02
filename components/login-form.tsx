@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
-import Cookies from 'js-cookie';
 import { useAuth } from "@/app/context/authContext";
 
 // Type definitions

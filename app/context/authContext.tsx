@@ -4,7 +4,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import axiosInstance from '@/lib/api/axiosInstance'
+import axiosInstance from '@/lib/axios'
+
 
 const AuthContext = createContext(null)
 
