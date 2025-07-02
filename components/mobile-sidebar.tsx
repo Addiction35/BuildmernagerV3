@@ -73,11 +73,6 @@ const sidebarItems = [
     icon: ShoppingCart,
   },
   {
-    title: "Bills",
-    href: "/bills",
-    icon: Receipt,
-  },
-  {
     title: "Expenses",
     href: "/expenses",
     icon: Wallet,
