@@ -75,25 +75,37 @@ const loginMutation = useMutation({
         }
       }
     },
-    onSuccess: (data) => {
-      if (data) {
+onSuccess: (data) => {
+  if (data?.user) {
+    const userWithMeta = {
+      ...data.user,
+      userId: data.user.id,
+      expiresAt: Date.now() + 1000 * 60 * 60, // 1 hour expiry (or customize)
+    };
 
-        login?.(); // Call login function from context       
-        toast({
-          title: "Login successful",
-          description: "Redirecting to dashboard...",
-          variant: "default",
-        });
-        router.push("/");
-      } else {
-        setAuthError("Login successful but received invalid response");
-        toast({
-          title: "Warning",
-          description: "Something is wrong with the server response",
-          variant: "destructive",
-        });
-      }
-    },
+    // 👇 Save to localStorage so context can pick it up
+    localStorage.setItem('user', JSON.stringify(userWithMeta));
+
+    // 👇 Refresh context from localStorage
+    login?.();
+
+    toast({
+      title: "Login successful",
+      description: "Redirecting to dashboard...",
+      variant: "default",
+    });
+
+    router.push("/");
+  } else {
+    setAuthError("Login successful but received invalid response");
+    toast({
+      title: "Warning",
+      description: "Something is wrong with the server response",
+      variant: "destructive",
+    });
+  }
+}
+,
     onError: (error: any) => {
       setAuthError(error.message || "Login failed");
       toast({
