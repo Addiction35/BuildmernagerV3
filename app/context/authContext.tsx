@@ -11,11 +11,39 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Validate session from server
+  const validateSession = async () => {
+    try {
+      const res = await axiosInstance.get('/auth/me')
+      const validUser = res.data.user
+
+      // Store in localStorage (non-sensitive info only)
+      localStorage.setItem('user', JSON.stringify(validUser))
+      setUser(validUser)
+    } catch (err) {
+      localStorage.removeItem('user')
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const cached = localStorage.getItem('user')
+    if (cached) {
+      try {
+        setUser(JSON.parse(cached))
+      } catch {
+        localStorage.removeItem('user')
+      }
+    }
+
+    validateSession()
+  }, [])
+
   // LOGOUT mutation
   const { mutate: logout } = useMutation({
-    mutationFn: async () => {
-      return axiosInstance.post('/auth/logout')
-    },
+    mutationFn: () => axiosInstance.post('/auth/logout'),
     onSuccess: () => {
       localStorage.removeItem('user')
       setUser(null)
@@ -23,93 +51,17 @@ export const AuthProvider = ({ children }) => {
     },
     onError: (err) => {
       localStorage.removeItem('user')
+      setUser(null)
       const msg = err?.response?.data?.message || 'Logout failed'
       toast.error(msg)
     },
   })
 
-  // Validate session on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    let shouldLogout = false
-
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser)
-
-        if (!parsedUser?.userId) {
-          shouldLogout = true
-        }
-
-        if (parsedUser?.expiresAt && Date.now() > parsedUser.expiresAt) {
-          toast.warning('Session expired')
-          shouldLogout = true
-        }
-
-        if (!shouldLogout) {
-          setUser(parsedUser)
-        }
-      } catch (e) {
-        console.error('Invalid localStorage user:', e)
-        shouldLogout = true
-      }
-    } else {
-      shouldLogout = true
-    }
-
-    if (shouldLogout) {
-      localStorage.removeItem('user')
-      setUser(null)
-    }
-
-    setIsLoading(false)
-  }, [])
-
-  // Sync across tabs
-  useEffect(() => {
-    const syncUserAcrossTabs = (e) => {
-      if (e.key === 'user') {
-        if (e.newValue) {
-          try {
-            const newUser = JSON.parse(e.newValue)
-            if (newUser?.userId) {
-              setUser(newUser)
-            } else {
-              logout()
-            }
-          } catch {
-            logout()
-          }
-        } else {
-          logout()
-        }
-      }
-    }
-
-    window.addEventListener('storage', syncUserAcrossTabs)
-    return () => window.removeEventListener('storage', syncUserAcrossTabs)
-  }, [logout])
-
-  // Manual login state refresh
-  const login = () => {
-    const stored = localStorage.getItem('user')
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        if (parsed?.userId) {
-          setUser(parsed)
-        } else {
-          logout()
-        }
-      } catch {
-        logout()
-      }
-    } else {
-      logout()
-    }
+  const login = async () => {
+    await validateSession()
   }
 
-  const isAuthenticated = !!user?.userId
+  const isAuthenticated = !!user
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout }}>
