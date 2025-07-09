@@ -75,37 +75,27 @@ const loginMutation = useMutation({
         }
       }
     },
-onSuccess: (data) => {
-  if (data?.user) {
+onSuccess: async () => {
+  try {
+    const meRes = await axiosInstance.get('/auth/me', { withCredentials: true })
+    const user = meRes.data.user
+
     const userWithMeta = {
-      ...data.user,
-      userId: data.user.id,
-      expiresAt: Date.now() + 1000 * 60 * 60, // 1 hour expiry (or customize)
-    };
+      ...user,
+      userId: user._id || user.id,
+      expiresAt: Date.now() + 1000 * 60 * 60,
+    }
 
-    // 👇 Save to localStorage so context can pick it up
-    localStorage.setItem('user', JSON.stringify(userWithMeta));
+    localStorage.setItem('user', JSON.stringify(userWithMeta))
+    login()
 
-    // 👇 Refresh context from localStorage
-    login?.();
-
-    toast({
-      title: "Login successful",
-      description: "Redirecting to dashboard...",
-      variant: "default",
-    });
-
-    router.push("/");
-  } else {
-    setAuthError("Login successful but received invalid response");
-    toast({
-      title: "Warning",
-      description: "Something is wrong with the server response",
-      variant: "destructive",
-    });
+    toast({ title: 'Login successful', description: 'Redirecting...', variant: 'default' })
+    router.push('/')
+  } catch (err) {
+    setAuthError('Login worked but user info fetch failed')
+    toast({ title: 'Error', description: 'Failed to fetch user info', variant: 'destructive' })
   }
-}
-,
+},
     onError: (error: any) => {
       setAuthError(error.message || "Login failed");
       toast({
