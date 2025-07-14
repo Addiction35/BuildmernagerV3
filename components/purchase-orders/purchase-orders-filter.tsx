@@ -17,7 +17,7 @@ export function PurchaseOrdersFilter() {
           <SelectTrigger className="w-full md:w-[180px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white">
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="delivered">Delivered</SelectItem>
             <SelectItem value="in-transit">In Transit</SelectItem>
@@ -28,7 +28,7 @@ export function PurchaseOrdersFilter() {
           <SelectTrigger className="w-full md:w-[180px]">
             <SelectValue placeholder="Sort By" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white">
             <SelectItem value="newest">Newest First</SelectItem>
             <SelectItem value="oldest">Oldest First</SelectItem>
             <SelectItem value="amount-high">Highest Amount</SelectItem>

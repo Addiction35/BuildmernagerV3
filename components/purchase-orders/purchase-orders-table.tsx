@@ -126,7 +126,6 @@ export function PurchaseOrdersTable() {
             <TableHead>Vendor</TableHead>
             <TableHead>Delivery Date</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Billed</TableHead>
             <TableHead>Company</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -156,9 +155,6 @@ export function PurchaseOrdersTable() {
                   {order.status}
                 </Badge>
               </TableCell>
-              <TableCell>
-                <Badge variant={order.billed ? "outline" : "destructive"}>{order.billed ? "Billed" : "Unbilled"}</Badge>
-              </TableCell>
               <TableCell>{order.companyName}</TableCell>
               <TableCell>{order.amount}</TableCell>
               <TableCell className="text-right">
@@ -169,7 +165,7 @@ export function PurchaseOrdersTable() {
                       <span className="sr-only">Open menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent className="bg-white" align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
                       <Eye className="mr-2 h-4 w-4" />

@@ -40,7 +40,6 @@ const formSchema = z.object({
   reference: z.string().optional(),
   projectId: z.string().min(1),
   company: z.string().min(1),
-  billed: z.enum(["billed", "unbilled"]),
   status: z.enum(["pending", "in-transit", "delivered"]),
   date: z.date(),
   deliveryDate: z.date(),
@@ -80,7 +79,6 @@ export function ExpenseForm() {
       date: new Date(),
       deliveryDate: new Date(),
       status: "pending",
-      billed: "unbilled",
       company: "",
       deliveryAddress: "",
       notes: "",
@@ -169,7 +167,7 @@ export function ExpenseForm() {
                   control={control}
                   defaultValue={null}
                   render={({ field }) => (
-                    <DatePicker
+                    <DatePicker 
                       id="start-date"
                       selected={field.value}
                       onChange={field.onChange}
@@ -212,7 +210,7 @@ export function ExpenseForm() {
                     <SelectTrigger id="projectId">
                       <SelectValue placeholder="Select a project" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       {projects?.map((project) => (
                         <SelectItem key={project._id} value={project._id}>
                           {project.name}
@@ -238,7 +236,7 @@ export function ExpenseForm() {
                     <SelectTrigger id="status">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="in-transit">In Transit</SelectItem>
                       <SelectItem value="delivered">Delivered</SelectItem>
@@ -259,31 +257,11 @@ export function ExpenseForm() {
                     <SelectTrigger id="company">
                       <SelectValue placeholder="Select company" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="AcmeCo">Acme Co.</SelectItem>
                       <SelectItem value="Globex">Globex Corporation</SelectItem>
                       <SelectItem value="Soylent">Soylent Ltd.</SelectItem>
                       <SelectItem value="Initech">Initech</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
-            {/* Billed Status */}
-            <div className="space-y-2">
-              <Label htmlFor="billed">Billed Status</Label>
-              <Controller
-                control={control}
-                name="billed"
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="billed">
-                      <SelectValue placeholder="Select billing status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="billed">Billed</SelectItem>
-                      <SelectItem value="unbilled">Unbilled</SelectItem>
                     </SelectContent>
                   </Select>
                 )}

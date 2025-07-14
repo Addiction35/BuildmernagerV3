@@ -128,7 +128,6 @@ export function ExpensesTable() {
             <TableHead>Vendor</TableHead>
             <TableHead>Delivery Date</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Billed</TableHead>
             <TableHead>Company</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -164,11 +163,6 @@ export function ExpensesTable() {
                   {expense.status}
                 </Badge>
               </TableCell>
-              <TableCell>
-                <Badge variant={expense.billed ? "outline" : "destructive"}>
-                  {expense.billed ? "Billed" : "Unbilled"}
-                </Badge>
-              </TableCell>
               <TableCell>{expense.companyName}</TableCell>
               <TableCell>{expense.amount}</TableCell>
               <TableCell className="text-right">
@@ -179,7 +173,7 @@ export function ExpensesTable() {
                       <span className="sr-only">Open menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent className="bg-white" align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
                       <Eye className="mr-2 h-4 w-4" />

@@ -126,7 +126,6 @@ export function WagesTable() {
             <TableHead>Vendor</TableHead>
             <TableHead>Delivery Date</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Billed</TableHead>
             <TableHead>Company</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -150,9 +149,6 @@ export function WagesTable() {
               <TableCell>
                 <Badge variant={wage.status === "Paid" ? "success" : "secondary"}>{wage.status}</Badge>
               </TableCell>
-              <TableCell>
-                <Badge variant={wage.billed ? "outline" : "destructive"}>{wage.billed ? "Billed" : "Unbilled"}</Badge>
-              </TableCell>
               <TableCell>{wage.companyName}</TableCell>
               <TableCell>{wage.amount}</TableCell>
               <TableCell className="text-right">
@@ -163,7 +159,7 @@ export function WagesTable() {
                       <span className="sr-only">Open menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent className="bg-white" align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
                       <Eye className="mr-2 h-4 w-4" />
