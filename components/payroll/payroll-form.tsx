@@ -1,480 +1,539 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFieldArray } from "react-hook-form"
-import { z } from "zod"
-import { CalendarIcon, Plus, Trash2 } from "lucide-react"
-import { format } from "date-fns"
-
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
+import { Plus, Trash2, Calculator, Download } from "lucide-react"
 
-// Sample data for employees
-const employees = [
-  { id: "EMP001", name: "John Doe", position: "Foreman", hourlyRate: 35 },
-  { id: "EMP002", name: "Jane Smith", position: "Electrician", hourlyRate: 32 },
-  { id: "EMP003", name: "Mike Johnson", position: "Plumber", hourlyRate: 30 },
-  { id: "EMP004", name: "Sarah Williams", position: "Carpenter", hourlyRate: 28 },
-  { id: "EMP005", name: "Robert Brown", position: "Laborer", hourlyRate: 22 },
-]
-
-// Sample data for projects
-const projects = [
-  { id: "PRJ001", name: "Riverside Apartments" },
-  { id: "PRJ002", name: "Downtown Office Complex" },
-  { id: "PRJ003", name: "Hillside Residential Development" },
-  { id: "PRJ004", name: "Community Center Renovation" },
-]
-
-const payrollFormSchema = z.object({
-  payPeriodStart: z.date({
-    required_error: "Pay period start date is required.",
-  }),
-  payPeriodEnd: z.date({
-    required_error: "Pay period end date is required.",
-  }),
-  paymentDate: z.date({
-    required_error: "Payment date is required.",
-  }),
-  reference: z.string().min(1, "Reference is required"),
-  description: z.string().optional(),
-  entries: z
-    .array(
-      z.object({
-        employeeId: z.string().min(1, "Employee is required"),
-        projectId: z.string().min(1, "Project is required"),
-        hours: z.coerce.number().min(0, "Hours must be a positive number"),
-        rate: z.coerce.number().min(0, "Rate must be a positive number"),
-        overtime: z.coerce.number().min(0, "Overtime must be a positive number"),
-        deductions: z.coerce.number().min(0, "Deductions must be a positive number"),
-        notes: z.string().optional(),
-      }),
-    )
-    .min(1, "At least one payroll entry is required"),
-})
-
-type PayrollFormValues = z.infer<typeof payrollFormSchema>
-
-const defaultValues: Partial<PayrollFormValues> = {
-  payPeriodStart: new Date(),
-  payPeriodEnd: new Date(),
-  paymentDate: new Date(),
-  reference: `PR-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`,
-  description: "",
-  entries: [
-    {
-      employeeId: "",
-      projectId: "",
-      hours: 0,
-      rate: 0,
-      overtime: 0,
-      deductions: 0,
-      notes: "",
-    },
-  ],
+interface CustomDeduction {
+  id: string
+  name: string
+  amount: number
+  isPercentage: boolean
 }
 
-export function PayrollForm() {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+interface PayslipData {
+  employeeName: string
+  date: string
+  grossPay: number
+  allowanceDeductions: number
+  personalRelief: number
+  preparedBy: string
+}
 
-  const form = useForm<PayrollFormValues>({
-    resolver: zodResolver(payrollFormSchema),
-    defaultValues,
-    mode: "onChange", // Optional: Enables validation on change
+interface DeductionRates {
+  paye: number
+  nssfTier1: number
+  nssfTier2: number
+  shif: number
+  housingLevy: number
+}
+
+export default function PayslipCalculator() {
+  const [isPayslipGenerated, setIsPayslipGenerated] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [payslipData, setPayslipData] = useState<PayslipData>({
+    employeeName: "Jamiil Abdulfattah Ahmed",
+    date: "3rd March 2025",
+    grossPay: 65883.5,
+    allowanceDeductions: 6753.0,
+    personalRelief: 2400.0,
+    preparedBy: "Adam maalim",
   })
 
-  function onSubmit(data: PayrollFormValues) {
-    setIsSubmitting(true)
+  const [deductionRates, setDeductionRates] = useState<DeductionRates>({
+    paye: 15.37, // percentage
+    nssfTier1: 480, // fixed amount
+    nssfTier2: 5.27, // percentage
+    shif: 2.75, // percentage
+    housingLevy: 1.5, // percentage
+  })
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log(data)
-      setIsSubmitting(false)
-      router.push("/payroll")
-    }, 1000)
+  const [customDeductions, setCustomDeductions] = useState<CustomDeduction[]>([])
+  const [newDeduction, setNewDeduction] = useState({ name: "", amount: 0, isPercentage: true })
+
+  // Calculated values
+  const [calculations, setCalculations] = useState({
+    taxablePay: 0,
+    paye: 0,
+    nssfTier1: 0,
+    nssfTier2: 0,
+    shif: 0,
+    housingLevy: 0,
+    customTotal: 0,
+    totalDeductions: 0,
+    netPay: 0,
+  })
+
+  useEffect(() => {
+    calculatePayslip()
+    // Reset payslip if it was generated and data changes
+    if (isPayslipGenerated) {
+      setIsPayslipGenerated(false)
+    }
+  }, [payslipData, deductionRates, customDeductions])
+
+  const calculatePayslip = () => {
+    const { grossPay, allowanceDeductions, personalRelief } = payslipData
+    const taxablePay = grossPay - allowanceDeductions
+
+    // Calculate standard deductions
+    const paye = Math.max(0, (taxablePay * deductionRates.paye) / 100 - personalRelief)
+    const nssfTier1 = deductionRates.nssfTier1 // Fixed amount
+    const nssfTier2 = (grossPay * deductionRates.nssfTier2) / 100
+    const shif = (grossPay * deductionRates.shif) / 100
+    const housingLevy = (grossPay * deductionRates.housingLevy) / 100
+
+    // Calculate custom deductions
+    const customTotal = customDeductions.reduce((total, deduction) => {
+      return total + (deduction.isPercentage ? (grossPay * deduction.amount) / 100 : deduction.amount)
+    }, 0)
+
+    const totalDeductions = paye + nssfTier1 + nssfTier2 + shif + housingLevy + customTotal
+    const netPay = grossPay - totalDeductions
+
+    setCalculations({
+      taxablePay,
+      paye,
+      nssfTier1,
+      nssfTier2,
+      shif,
+      housingLevy,
+      customTotal,
+      totalDeductions,
+      netPay,
+    })
   }
 
-  const { fields, append, remove } = useFieldArray({
-    name: "entries",
-    control: form.control,
-  })
-
-  // Calculate totals
-  const entries = form.watch("entries")
-  const totalRegularPay = entries.reduce((sum, entry) => {
-    return sum + (entry.hours || 0) * (entry.rate || 0)
-  }, 0)
-
-  const totalOvertimePay = entries.reduce((sum, entry) => {
-    return sum + (entry.overtime || 0) * (entry.rate ? entry.rate * 1.5 : 0)
-  }, 0)
-
-  const totalDeductions = entries.reduce((sum, entry) => {
-    return sum + (entry.deductions || 0)
-  }, 0)
-
-  const netPay = totalRegularPay + totalOvertimePay - totalDeductions
-
-  // Auto-fill rate when employee is selected
-  const handleEmployeeChange = (index: number, employeeId: string) => {
-    const employee = employees.find((emp) => emp.id === employeeId)
-    if (employee) {
-      form.setValue(`entries.${index}.rate`, employee.hourlyRate)
+  const addCustomDeduction = () => {
+    if (newDeduction.name && newDeduction.amount > 0) {
+      const deduction: CustomDeduction = {
+        id: Date.now().toString(),
+        name: newDeduction.name,
+        amount: newDeduction.amount,
+        isPercentage: newDeduction.isPercentage,
+      }
+      setCustomDeductions([...customDeductions, deduction])
+      setNewDeduction({ name: "", amount: 0, isPercentage: true })
     }
   }
 
+  const removeCustomDeduction = (id: string) => {
+    setCustomDeductions(customDeductions.filter((d) => d.id !== id))
+  }
+
+  const generatePayslip = async () => {
+    setIsGenerating(true)
+    // Simulate processing time
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    setIsPayslipGenerated(true)
+    setIsGenerating(false)
+  }
+
+  const downloadPDF = async () => {
+    const element = document.getElementById("payslip-content")
+    if (!element) return
+
+    // Dynamically import html2pdf
+    const html2pdf = (await import("html2pdf.js")).default
+
+    const opt = {
+      margin: 1,
+      filename: `payslip-${payslipData.employeeName.replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    }
+
+    html2pdf().set(opt).from(element).save()
+  }
+
+  const resetPayslip = () => {
+    setIsPayslipGenerated(false)
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-KE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount)
+  }
+
+  const printPayslip = () => {
+    window.print()
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <FormField
-            control={form.control}
-            name="payPeriodStart"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Pay Period Start</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                      >
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-2">Payslip Calculator</h1>
+        <p className="text-muted-foreground">Calculate employee payslips with customizable deductions</p>
+      </div>
 
-          <FormField
-            control={form.control}
-            name="payPeriodEnd"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Pay Period End</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                      >
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Input Section */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Employee Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="employeeName">Employee Name</Label>
+                <Input
+                  id="employeeName"
+                  value={payslipData.employeeName}
+                  onChange={(e) => setPayslipData({ ...payslipData, employeeName: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  value={payslipData.date}
+                  onChange={(e) => setPayslipData({ ...payslipData, date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="grossPay">Gross Pay (KES)</Label>
+                <Input
+                  id="grossPay"
+                  type="number"
+                  step="0.01"
+                  value={payslipData.grossPay}
+                  onChange={(e) => setPayslipData({ ...payslipData, grossPay: Number.parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="allowanceDeductions">Allowance Deductions (KES)</Label>
+                <Input
+                  id="allowanceDeductions"
+                  type="number"
+                  step="0.01"
+                  value={payslipData.allowanceDeductions}
+                  onChange={(e) =>
+                    setPayslipData({ ...payslipData, allowanceDeductions: Number.parseFloat(e.target.value) || 0 })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="personalRelief">Personal Relief (KES)</Label>
+                <Input
+                  id="personalRelief"
+                  type="number"
+                  step="0.01"
+                  value={payslipData.personalRelief}
+                  onChange={(e) =>
+                    setPayslipData({ ...payslipData, personalRelief: Number.parseFloat(e.target.value) || 0 })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="preparedBy">Prepared By</Label>
+                <Input
+                  id="preparedBy"
+                  value={payslipData.preparedBy}
+                  onChange={(e) => setPayslipData({ ...payslipData, preparedBy: e.target.value })}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-          <FormField
-            control={form.control}
-            name="paymentDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Payment Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                      >
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Deduction Rates</CardTitle>
+              <CardDescription>Customize deduction percentages and amounts</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="paye">PAYE (%)</Label>
+                <Input
+                  id="paye"
+                  type="number"
+                  step="0.01"
+                  value={deductionRates.paye}
+                  onChange={(e) =>
+                    setDeductionRates({ ...deductionRates, paye: Number.parseFloat(e.target.value) || 0 })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="nssfTier1">NSSF Tier I (Fixed Amount KES)</Label>
+                <Input
+                  id="nssfTier1"
+                  type="number"
+                  step="0.01"
+                  value={deductionRates.nssfTier1}
+                  onChange={(e) =>
+                    setDeductionRates({ ...deductionRates, nssfTier1: Number.parseFloat(e.target.value) || 0 })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="nssfTier2">NSSF Tier II (%)</Label>
+                <Input
+                  id="nssfTier2"
+                  type="number"
+                  step="0.01"
+                  value={deductionRates.nssfTier2}
+                  onChange={(e) =>
+                    setDeductionRates({ ...deductionRates, nssfTier2: Number.parseFloat(e.target.value) || 0 })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="shif">SHIF (%)</Label>
+                <Input
+                  id="shif"
+                  type="number"
+                  step="0.01"
+                  value={deductionRates.shif}
+                  onChange={(e) =>
+                    setDeductionRates({ ...deductionRates, shif: Number.parseFloat(e.target.value) || 0 })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="housingLevy">Housing Levy (%)</Label>
+                <Input
+                  id="housingLevy"
+                  type="number"
+                  step="0.01"
+                  value={deductionRates.housingLevy}
+                  onChange={(e) =>
+                    setDeductionRates({ ...deductionRates, housingLevy: Number.parseFloat(e.target.value) || 0 })
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom Deductions</CardTitle>
+              <CardDescription>Add additional deductions as needed</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Deduction name"
+                  value={newDeduction.name}
+                  onChange={(e) => setNewDeduction({ ...newDeduction, name: e.target.value })}
+                />
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Amount"
+                  value={newDeduction.amount}
+                  onChange={(e) => setNewDeduction({ ...newDeduction, amount: Number.parseFloat(e.target.value) || 0 })}
+                />
+                <select
+                  className="px-3 py-2 border rounded-md"
+                  value={newDeduction.isPercentage ? "percentage" : "fixed"}
+                  onChange={(e) => setNewDeduction({ ...newDeduction, isPercentage: e.target.value === "percentage" })}
+                >
+                  <option value="percentage">%</option>
+                  <option value="fixed">KES</option>
+                </select>
+                <Button onClick={addCustomDeduction} size="sm">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {customDeductions.map((deduction) => (
+                <div key={deduction.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                  <span>{deduction.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {deduction.isPercentage ? `${deduction.amount}%` : `KES ${formatCurrency(deduction.amount)}`}
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => removeCustomDeduction(deduction.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="reference"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Reference</FormLabel>
-                <FormControl>
-                  <Input placeholder="PR-2023-05" {...field} />
-                </FormControl>
-                <FormDescription>A unique reference for this payroll run</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Input placeholder="Bi-weekly payroll" {...field} />
-                </FormControl>
-                <FormDescription>Optional description for this payroll run</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <Separator />
-
+        {/* Payslip Display */}
         <div>
-          <h3 className="text-lg font-medium mb-4">Payroll Entries</h3>
-
-          {fields.map((field, index) => (
-            <Card key={field.id} className="mb-4">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-md">Entry #{index + 1}</CardTitle>
-                {index > 0 && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+          {!isPayslipGenerated ? (
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl">Generate Payslip</CardTitle>
+                <CardDescription>
+                  Fill in the employee information and deductions, then generate the payslip
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-4">
-                  <FormField
-                    control={form.control}
-                    name={`entries.${index}.employeeId`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Employee</FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value)
-                            handleEmployeeChange(index, value)
-                          }}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select employee" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {employees.map((employee) => (
-                              <SelectItem key={employee.id} value={employee.id}>
-                                {employee.name} - {employee.position}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`entries.${index}.projectId`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select project" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {projects.map((project) => (
-                              <SelectItem key={project.id} value={project.id}>
-                                {project.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`entries.${index}.rate`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Hourly Rate ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <CardContent className="text-center space-y-4">
+                <div className="p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+                  <Calculator className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground mb-6">Your payslip will appear here once generated</p>
+                  <Button
+                    onClick={generatePayslip}
+                    disabled={isGenerating || !payslipData.employeeName || payslipData.grossPay <= 0}
+                    size="lg"
+                  >
+                    {isGenerating ? "Generating..." : "Generate Payslip"}
+                  </Button>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
-                  <FormField
-                    control={form.control}
-                    name={`entries.${index}.hours`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Regular Hours</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.5" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`entries.${index}.overtime`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Overtime Hours</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.5" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`entries.${index}.deductions`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deductions ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <FormField
-                    control={form.control}
-                    name={`entries.${index}.notes`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                {/* Preview of current calculations */}
+                <div className="text-left space-y-2 p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-semibold">Quick Preview:</h4>
+                  <div className="flex justify-between text-sm">
+                    <span>Gross Pay:</span>
+                    <span>KES {formatCurrency(payslipData.grossPay)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Total Deductions:</span>
+                    <span>KES {formatCurrency(calculations.totalDeductions)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-semibold">
+                    <span>Net Pay:</span>
+                    <span>KES {formatCurrency(calculations.netPay)}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            <Card className="print:shadow-none">
+              <CardHeader className="text-center print:hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-green-600">
+                    <div className="h-2 w-2 bg-green-600 rounded-full"></div>
+                    <span className="text-sm font-medium">Payslip Generated Successfully</span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={resetPayslip}>
+                    Edit Details
+                  </Button>
+                </div>
+              </CardHeader>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() =>
-              append({
-                employeeId: "",
-                projectId: "",
-                hours: 0,
-                rate: 0,
-                overtime: 0,
-                deductions: 0,
-                notes: "",
-              })
-            }
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Employee
-          </Button>
+              <div id="payslip-content">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl">PAYSLIP 2025</CardTitle>
+                  <CardDescription className="text-lg">{payslipData.date}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold">{payslipData.employeeName}</h2>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Gross Pay</span>
+                      <span className="font-mono">KES {formatCurrency(payslipData.grossPay)}</span>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="font-semibold mb-3">Deductions:</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>PAYE</span>
+                        <span className="font-mono">{formatCurrency(calculations.paye)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>NSSF Tier I</span>
+                        <span className="font-mono">{formatCurrency(calculations.nssfTier1)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>NSSF Tier II</span>
+                        <span className="font-mono">{formatCurrency(calculations.nssfTier2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>SHIF</span>
+                        <span className="font-mono">{formatCurrency(calculations.shif)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Housing Levy</span>
+                        <span className="font-mono">{formatCurrency(calculations.housingLevy)}</span>
+                      </div>
+
+                      {customDeductions.map((deduction) => (
+                        <div key={deduction.id} className="flex justify-between">
+                          <span>{deduction.name}</span>
+                          <span className="font-mono">
+                            {formatCurrency(
+                              deduction.isPercentage
+                                ? (payslipData.grossPay * deduction.amount) / 100
+                                : deduction.amount,
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex justify-between items-center font-semibold">
+                    <span>Total Deductions</span>
+                    <span className="font-mono">{formatCurrency(calculations.totalDeductions)}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-lg font-bold bg-primary/10 p-3 rounded">
+                    <span>Net Pay</span>
+                    <span className="font-mono">KES {formatCurrency(calculations.netPay)}</span>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h3 className="font-semibold mb-3">PAYE Information:</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Gross Pay</span>
+                        <span className="font-mono">{formatCurrency(payslipData.grossPay)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Allowance Deductions</span>
+                        <span className="font-mono">{formatCurrency(payslipData.allowanceDeductions)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Taxable Pay</span>
+                        <span className="font-mono">{formatCurrency(calculations.taxablePay)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Personal Relief</span>
+                        <span className="font-mono">{formatCurrency(payslipData.personalRelief)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center text-sm text-muted-foreground pt-4">
+                    <p>Prepared by: {payslipData.preparedBy}</p>
+                  </div>
+                </CardContent>
+              </div>
+
+              <CardContent className="print:hidden pt-0">
+                <div className="flex gap-2">
+                  <Button onClick={() => window.print()} variant="outline" className="flex-1">
+                    <Download className="h-4 w-4 mr-2" />
+                    Print
+                  </Button>
+                  <Button onClick={downloadPDF} className="flex-1">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
-
-        <Separator />
-
-        <div className="bg-muted p-4 rounded-lg">
-          <h3 className="text-lg font-medium mb-4">Payroll Summary</h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Regular Pay</p>
-              <p className="text-lg font-medium">${totalRegularPay.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Overtime Pay</p>
-              <p className="text-lg font-medium">${totalOvertimePay.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Deductions</p>
-              <p className="text-lg font-medium">${totalDeductions.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Net Pay</p>
-              <p className="text-lg font-medium">${netPay.toFixed(2)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => router.push("/payroll")}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Processing..." : "Create Payroll Run"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+      </div>
+    </div>
   )
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { PayrollForm } from "@/components/payroll/payroll-form"
+import PayslipCalculator, { PayrollForm } from "@/components/payroll/payroll-form"
 
 export const metadata: Metadata = {
   title: "New Payroll Run | Construction Management",
@@ -12,7 +12,7 @@ export default function NewPayrollPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">New Payroll Run</h1>
       </div>
-      <PayrollForm />
+      <PayslipCalculator/>
     </div>
   )
 }
