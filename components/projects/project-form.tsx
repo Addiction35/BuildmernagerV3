@@ -92,7 +92,7 @@ const onSubmit = (data) => {
                     <SelectTrigger id="client">
                       <SelectValue placeholder="Select a client" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       {clients?.map((client) => (
                         <SelectItem key={client._id} value={client._id}>
                           {client.companyName}
@@ -121,7 +121,7 @@ const onSubmit = (data) => {
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="planning">Planning</SelectItem>
                     <SelectItem value="in-progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
@@ -180,7 +180,7 @@ const onSubmit = (data) => {
                   <SelectTrigger id="type">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="residential">Residential</SelectItem>
                     <SelectItem value="commercial">Commercial</SelectItem>
                     <SelectItem value="industrial">Industrial</SelectItem>

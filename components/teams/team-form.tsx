@@ -70,7 +70,7 @@ const TeamForm = () => {
                     <SelectTrigger id="department">
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white">
                       <SelectItem value="construction">Construction</SelectItem>
                       <SelectItem value="engineering">Engineering</SelectItem>
                       <SelectItem value="architecture">Architecture</SelectItem>
@@ -88,7 +88,7 @@ const TeamForm = () => {
                   <SelectTrigger id="teamLead">
                     <SelectValue placeholder="Select team lead" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     {availableMembers.map((member) => (
                       <SelectItem key={member.id} value={member.id}>
                         {member.name} ({member.role})

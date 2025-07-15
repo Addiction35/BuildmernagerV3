@@ -196,7 +196,7 @@ const onSubmit = (data) => {
                   <SelectTrigger id="paymentTerms" className="w-full">
                     <SelectValue placeholder="Select payment terms" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="net15">Mobile Money</SelectItem>
                     <SelectItem value="net30">Cheque</SelectItem>

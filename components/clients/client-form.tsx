@@ -107,7 +107,7 @@ export function ClientForm() {
                       <SelectTrigger id="clientType">
                         <SelectValue placeholder="Select client type" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white">
                         <SelectItem value="individual">Individual</SelectItem>
                         <SelectItem value="business">Business</SelectItem>
                         <SelectItem value="government">Government</SelectItem>
@@ -206,7 +206,7 @@ export function ClientForm() {
                   <SelectTrigger id="industry">
                     <SelectValue placeholder="Select industry" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="residential">Residential</SelectItem>
                     <SelectItem value="commercial">Commercial</SelectItem>
                     <SelectItem value="industrial">Industrial</SelectItem>

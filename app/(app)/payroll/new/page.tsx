@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import PayslipCalculator, { PayrollForm } from "@/components/payroll/payroll-form"
+import PayslipCalculator from "@/components/payroll/payroll-form"
 
 export const metadata: Metadata = {
   title: "New Payroll Run | Construction Management",

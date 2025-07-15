@@ -64,7 +64,7 @@ export function ResourceForm() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="equipment">Equipment</SelectItem>
                   <SelectItem value="materials">Materials</SelectItem>
                   <SelectItem value="tools">Tools</SelectItem>
@@ -84,7 +84,7 @@ export function ResourceForm() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="available">Available</SelectItem>
                   <SelectItem value="in-use">In Use</SelectItem>
                   <SelectItem value="maintenance">Maintenance</SelectItem>
