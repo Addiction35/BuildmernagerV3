@@ -1,117 +1,81 @@
-'use client'
+"use client";
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import axiosInstance from '@/lib/axios'
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import axiosInstance from "@/lib/axios";
 
-const AuthContext = createContext(null)
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [token, setToken] = useState(null) // 🔥 Store JWT token (if used)
-
-  // ✅ Validate session or JWT from server
-  const validateSession = async () => {
-    try {
-      const res = await axiosInstance.get('/auth/profile') // 🔥 Unified endpoint
-      const validUser = res.data.user
-
-      // Cache safe fields (never password or token)
-      const cachedUser = {
-        userId: validUser.userId,
-        name: validUser.name,
-        email: validUser.email,
-        role: validUser.role,
-        status: validUser.status,
-        profileImage: validUser.profileImage,
-        preferences: validUser.profilePreferences || {},
-        notifications: validUser.notificationPreferences || {},
-        createdAt: validUser.createdAt,
-        updatedAt: validUser.updatedAt,
-      }
-
-      localStorage.setItem('user', JSON.stringify(cachedUser))
-      setUser(cachedUser)
-
-      // Optionally save JWT if provided
-      if (res.data.token) {
-        setToken(res.data.token)
-        localStorage.setItem('token', res.data.token)
-      }
-    } catch (err) {
-      console.error('❌ Session validation failed:', err)
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-      setUser(null)
-      setToken(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    // Try restoring cached user
-    const cachedUser = localStorage.getItem('user')
-    const cachedToken = localStorage.getItem('token')
-
-    if (cachedUser) {
-      try {
-        setUser(JSON.parse(cachedUser))
-      } catch {
-        localStorage.removeItem('user')
-      }
-    }
-
-    if (cachedToken) {
-      setToken(cachedToken)
-    }
-
-    validateSession()
-  }, [])
-
-  // ✅ Logout mutation
-  const { mutate: logout } = useMutation({
-    mutationFn: () => axiosInstance.post('/auth/logout'),
-    onSuccess: () => {
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-      setUser(null)
-      setToken(null)
-      toast.success('Logged out successfully')
-    },
-    onError: (err) => {
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-      setUser(null)
-      setToken(null)
-      const msg = err?.response?.data?.message || 'Logout failed'
-      toast.error(msg)
-    },
-  })
-
-  // ✅ Login helper (re-validate session after login)
-  const login = async () => {
-    await validateSession()
-  }
-
-  const isAuthenticated = !!user
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated,
-        isLoading,
-        login,
-        logout,
-      }}
-    >
-      {!isLoading && children}
-    </AuthContext.Provider>
-  )
+interface User {
+  userId: string;
+  name: string;
+  email: string;
+  role: string;
+  profileImage?: string;
+  status?: string;
+  notificationPreferences?: object;
 }
 
-export const useAuth = () => useContext(AuthContext)
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (user: User) => void;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [ready, setReady] = useState(false); // 🔥 Track hydration
+
+  const isAuthenticated = !!user;
+
+  const login = (userData: User) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const logout = async () => {
+    try {
+      await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
+    } catch (err) {
+      console.error("❌ Logout failed:", err);
+    }
+    localStorage.removeItem("user");
+    setUser(null);
+  };
+
+  // ✅ Restore user from localStorage after mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setReady(true); // ✅ Hydration complete
+  }, []);
+
+  const authContextValue = useMemo(
+    () => ({
+      user,
+      isAuthenticated,
+      login,
+      logout,
+    }),
+    [user, isAuthenticated]
+  );
+
+  // ⛔ Prevent rendering children until hydration complete
+  if (!ready) return null;
+
+  return (
+    <AuthContext.Provider value={authContextValue}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
