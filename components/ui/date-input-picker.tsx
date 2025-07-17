@@ -71,9 +71,20 @@ export function DateInputPicker({
           </Button>
         </PopoverTrigger>
       </div>
-      <PopoverContent className="w-auto p-0 z-[50]" align="start">
-        <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus disabled={disabled} />
+      <PopoverContent
+        className="w-auto bg-white z-50 p-2 shadow-lg rounded-md"
+        align="start"
+        sideOffset={4}
+      >
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={handleDateSelect}
+          initialFocus
+          disabled={disabled}
+        />
       </PopoverContent>
+
     </Popover>
   )
 }
