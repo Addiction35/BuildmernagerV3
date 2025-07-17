@@ -15,99 +15,30 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Edit, Eye, MoreHorizontal, Receipt, Trash } from "lucide-react"
-
-const expenses = [
-  {
-    id: "EXP001",
-    number: "EXP-2023-001",
-    date: "2023-06-10",
-    reference: "PRJ001-SITE",
-    vendorName: "City Permits Office",
-    deliveryDate: "2023-06-10",
-    status: "Approved",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$1,200",
-    project: "Riverside Apartments",
-  },
-  {
-    id: "EXP002",
-    number: "EXP-2023-002",
-    date: "2023-06-15",
-    reference: "PRJ003-UTIL",
-    vendorName: "City Utilities",
-    deliveryDate: "2023-06-15",
-    status: "Pending",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$850",
-    project: "Hillside Residence",
-  },
-  {
-    id: "EXP003",
-    number: "EXP-2023-003",
-    date: "2023-07-01",
-    reference: "PRJ002-EQUIP",
-    vendorName: "Equipment Rentals Inc.",
-    deliveryDate: "2023-07-01",
-    status: "Approved",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$3,200",
-    project: "Downtown Office Renovation",
-  },
-  {
-    id: "EXP004",
-    number: "EXP-2023-004",
-    date: "2023-07-08",
-    reference: "PRJ001-TRAV",
-    vendorName: "Travel Expenses",
-    deliveryDate: "2023-07-08",
-    status: "Pending",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$780",
-    project: "Riverside Apartments",
-  },
-  {
-    id: "EXP005",
-    number: "EXP-2023-005",
-    date: "2023-07-15",
-    reference: "PRJ004-INSP",
-    vendorName: "Building Inspector",
-    deliveryDate: "2023-07-15",
-    status: "Approved",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$500",
-    project: "Community Center",
-  },
-  {
-    id: "EXP006",
-    number: "EXP-2023-006",
-    date: "2023-07-22",
-    reference: "PRJ005-TOOL",
-    vendorName: "Tools Supply Co.",
-    deliveryDate: "2023-07-22",
-    status: "Rejected",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$1,450",
-    project: "Retail Store Fitout",
-  },
-]
+import { useExpenses } from "@/lib/hooks/expenseQueries"
 
 export function ExpensesTable() {
+  const { data: expenses = [], isLoading } = useExpenses()
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([])
 
   const toggleExpense = (expenseId: string) => {
     setSelectedExpenses((prev) =>
-      prev.includes(expenseId) ? prev.filter((id) => id !== expenseId) : [...prev, expenseId],
+      prev.includes(expenseId) ? prev.filter((id) => id !== expenseId) : [...prev, expenseId]
     )
   }
 
   const toggleAll = () => {
-    setSelectedExpenses((prev) => (prev.length === expenses.length ? [] : expenses.map((expense) => expense.id)))
+    setSelectedExpenses((prev) =>
+      prev.length === expenses.length ? [] : expenses.map((expense) => expense._id)
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-10">
+        <p className="text-muted-foreground">Loading expenses...</p>
+      </div>
+    )
   }
 
   return (
@@ -135,36 +66,26 @@ export function ExpensesTable() {
         </TableHeader>
         <TableBody>
           {expenses.map((expense) => (
-            <TableRow key={expense.id}>
+            <TableRow key={expense._id}>
               <TableCell>
                 <Checkbox
-                  checked={selectedExpenses.includes(expense.id)}
-                  onCheckedChange={() => toggleExpense(expense.id)}
-                  aria-label={`Select ${expense.number}`}
+                  checked={selectedExpenses.includes(expense._id)}
+                  onCheckedChange={() => toggleExpense(expense._id)}
+                  aria-label={`Select ${expense.poNumber}`}
                 />
               </TableCell>
               <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-              <TableCell className="font-medium">{expense.number}</TableCell>
+              <TableCell className="font-medium">{expense.poNumber}</TableCell>
               <TableCell>{expense.reference}</TableCell>
               <TableCell>{expense.vendorName}</TableCell>
               <TableCell>{new Date(expense.deliveryDate).toLocaleDateString()}</TableCell>
               <TableCell>
-                <Badge
-                  variant={
-                    expense.status === "Approved"
-                      ? "success"
-                      : expense.status === "Pending"
-                        ? "default"
-                        : expense.status === "Rejected"
-                          ? "destructive"
-                          : "secondary"
-                  }
-                >
+                <Badge variant={expense.status === "Paid" ? "success" : "secondary"}>
                   {expense.status}
                 </Badge>
               </TableCell>
-              <TableCell>{expense.companyName}</TableCell>
-              <TableCell>{expense.amount}</TableCell>
+              <TableCell>{expense.company}</TableCell>
+              <TableCell>{expense.amount || 0}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -175,20 +96,26 @@ export function ExpensesTable() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-white" align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      <Link href={`/expenses/${expense.id}`}>View Details</Link>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/expenses/${expense._id}`}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      <Link href={`/expenses/${expense.id}/edit`}>Edit Expense</Link>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/expenses/${expense._id}/edit`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Expense
+                      </Link>
                     </DropdownMenuItem>
-                    {!expense.billed && expense.status === "Approved" && (
+                    {!expense.billed && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Receipt className="mr-2 h-4 w-4" />
-                          <Link href={`/bills/new?from=${expense.id}`}>Create Bill</Link>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/bills/new?from=${expense._id}`}>
+                            <Receipt className="mr-2 h-4 w-4" />
+                            Create Bill
+                          </Link>
                         </DropdownMenuItem>
                       </>
                     )}
