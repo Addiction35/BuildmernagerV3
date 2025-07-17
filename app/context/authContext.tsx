@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import jwt_decode from "jwt-decode";
 import axiosInstance from "@/lib/axios";
 
 interface User {
@@ -16,7 +17,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (user: User) => void;
+  login: (user: User, token: string) => void;
   logout: () => Promise<void>;
 }
 
@@ -24,12 +25,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [ready, setReady] = useState(false); // 🔥 Track hydration
+  const [ready, setReady] = useState(false);
 
   const isAuthenticated = !!user;
 
-  const login = (userData: User) => {
+  const login = (userData: User, token: string) => {
     localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token); // ✅ Save JWT token
     setUser(userData);
   };
 
@@ -40,16 +42,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("❌ Logout failed:", err);
     }
     localStorage.removeItem("user");
+    localStorage.removeItem("token"); // ✅ Remove token
     setUser(null);
   };
 
-  // ✅ Restore user from localStorage after mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem("token");
+
+    if (storedUser && token) {
+      try {
+        const decoded: any = jwt_decode(token); // Optional: validate expiry or extract info
+        console.log("✅ Token decoded:", decoded);
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error("❌ Invalid token:", err);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
     }
-    setReady(true); // ✅ Hydration complete
+
+    setReady(true);
   }, []);
 
   const authContextValue = useMemo(
@@ -62,8 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [user, isAuthenticated]
   );
 
-  // ⛔ Prevent rendering children until hydration complete
-  if (!ready) return null;
+  if (!ready) return null; // Prevent flicker before restoring state
 
   return (
     <AuthContext.Provider value={authContextValue}>

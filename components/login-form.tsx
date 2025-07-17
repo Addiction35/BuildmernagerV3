@@ -50,11 +50,17 @@ const loginMutation = useMutation({
     return response.data;
   },
 onSuccess: (data) => {
-  console.log(data);
-  // Save user only (no token needed for session)
-  login(data.user); 
+  console.log("✅ Login response:", data);
 
-  toast({ title: "Login successful", description: "Redirecting..." });
+  // Save user and token in localStorage and context
+  login(data.user, data.token);
+
+  toast({
+    title: "Login successful",
+    description: "Redirecting...",
+    duration: 3000,
+  });
+
   router.push('/');
 },
   onError: (error: any) => {
