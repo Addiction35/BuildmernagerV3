@@ -1,16 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { toast } from "@/components/ui/use-toast"
+import { useState, useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import { toast } from "@/components/ui/use-toast";
+
+import type { User } from "@/types/user";
+
+interface ProfileInfoProps {
+  user: User;
+}
 
 const profileFormSchema = z.object({
   name: z.string().min(2, {
@@ -24,41 +49,51 @@ const profileFormSchema = z.object({
   bio: z.string().max(500, {
     message: "Bio must not be longer than 500 characters.",
   }),
-})
+});
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-const defaultValues: Partial<ProfileFormValues> = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  phone: "(555) 123-4567",
-  title: "Project Manager",
-  bio: "Experienced project manager with over 10 years in the construction industry. Specialized in residential and commercial projects.",
-}
-
-export function ProfileInfo() {
-  const [isLoading, setIsLoading] = useState(false)
+export function ProfileInfo({ user }: ProfileInfoProps) {
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
-  })
+    defaultValues: {
+      name: user.name || "",
+      email: user.email || "",
+      phone: "",
+      title: user.role || "",
+      bio: "",
+    },
+  });
+
+  // Sync user data if user changes
+  useEffect(() => {
+    form.reset({
+      name: user.name || "",
+      email: user.email || "",
+      phone: "",
+      title: user.role || "",
+      bio: "",
+    });
+  }, [user, form]);
 
   function onSubmit(data: ProfileFormValues) {
-    setIsLoading(true)
+    setIsLoading(true);
 
-    // Simulate API call
+    // Simulate API call (replace with axiosInstance.put later)
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoading(false);
       toast({
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
-      })
-    }, 1000)
+      });
+    }, 1000);
   }
 
   return (
     <div className="grid gap-6 md:grid-cols-[250px_1fr]">
+      {/* Profile Picture */}
       <Card>
         <CardHeader>
           <CardTitle>Profile Picture</CardTitle>
@@ -66,14 +101,25 @@ export function ProfileInfo() {
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center gap-4">
           <Avatar className="h-32 w-32">
-            <AvatarImage src="/placeholder.svg?height=128&width=128" alt="John Doe" />
-            <AvatarFallback className="text-4xl">JD</AvatarFallback>
+            <AvatarImage
+              src={user.profileImage || "/placeholder.svg"}
+              alt={user.name}
+            />
+            <AvatarFallback className="text-4xl">
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <Button variant="outline" size="sm">
             Change Picture
           </Button>
         </CardContent>
       </Card>
+
+      {/* Personal Info */}
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
@@ -81,8 +127,12 @@ export function ProfileInfo() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
               <div className="grid gap-4 md:grid-cols-2">
+                {/* Name */}
                 <FormField
                   control={form.control}
                   name="name"
@@ -96,6 +146,8 @@ export function ProfileInfo() {
                     </FormItem>
                   )}
                 />
+
+                {/* Email */}
                 <FormField
                   control={form.control}
                   name="email"
@@ -109,6 +161,8 @@ export function ProfileInfo() {
                     </FormItem>
                   )}
                 />
+
+                {/* Phone */}
                 <FormField
                   control={form.control}
                   name="phone"
@@ -116,12 +170,17 @@ export function ProfileInfo() {
                     <FormItem>
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your phone number" {...field} />
+                        <Input
+                          placeholder="Your phone number"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {/* Title */}
                 <FormField
                   control={form.control}
                   name="title"
@@ -129,13 +188,18 @@ export function ProfileInfo() {
                     <FormItem>
                       <FormLabel>Job Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your job title" {...field} />
+                        <Input
+                          placeholder="Your job title"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+
+              {/* Bio */}
               <FormField
                 control={form.control}
                 name="bio"
@@ -143,13 +207,20 @@ export function ProfileInfo() {
                   <FormItem>
                     <FormLabel>Bio</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Tell us about yourself" className="min-h-32" {...field} />
+                      <Textarea
+                        placeholder="Tell us about yourself"
+                        className="min-h-32"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormDescription>Brief description for your profile. URLs are hyperlinked.</FormDescription>
+                    <FormDescription>
+                      Brief description for your profile.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Saving..." : "Save Changes"}
               </Button>
@@ -158,5 +229,5 @@ export function ProfileInfo() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
