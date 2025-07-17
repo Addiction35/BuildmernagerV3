@@ -15,97 +15,30 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Edit, Eye, MoreHorizontal, Receipt, Trash } from "lucide-react"
-
-const wages = [
-  {
-    id: "WG001",
-    number: "WG-2023-001",
-    date: "2023-06-18",
-    reference: "PRJ001-LABOR-JUN",
-    vendorName: "John Carpenter",
-    deliveryDate: "2023-06-18",
-    status: "Paid",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$2,800",
-    project: "Riverside Apartments",
-  },
-  {
-    id: "WG002",
-    number: "WG-2023-002",
-    date: "2023-06-25",
-    reference: "PRJ003-LABOR-JUN",
-    vendorName: "Electric Team",
-    deliveryDate: "2023-06-25",
-    status: "Pending",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$3,500",
-    project: "Hillside Residence",
-  },
-  {
-    id: "WG003",
-    number: "WG-2023-003",
-    date: "2023-07-01",
-    reference: "PRJ002-LABOR-JUL",
-    vendorName: "Plumbing Crew",
-    deliveryDate: "2023-07-01",
-    status: "Paid",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$2,100",
-    project: "Downtown Office Renovation",
-  },
-  {
-    id: "WG004",
-    number: "WG-2023-004",
-    date: "2023-07-08",
-    reference: "PRJ001-LABOR-JUL",
-    vendorName: "Finishing Team",
-    deliveryDate: "2023-07-08",
-    status: "Pending",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$4,200",
-    project: "Riverside Apartments",
-  },
-  {
-    id: "WG005",
-    number: "WG-2023-005",
-    date: "2023-07-15",
-    reference: "PRJ004-LABOR-JUL",
-    vendorName: "Structure Crew",
-    deliveryDate: "2023-07-15",
-    status: "Paid",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$5,800",
-    project: "Community Center",
-  },
-  {
-    id: "WG006",
-    number: "WG-2023-006",
-    date: "2023-07-22",
-    reference: "PRJ005-LABOR-JUL",
-    vendorName: "Installation Team",
-    deliveryDate: "2023-07-22",
-    status: "Pending",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$1,900",
-    project: "Retail Store Fitout",
-  },
-]
+import { useWages } from "@/lib/hooks/wagesQueries"
 
 export function WagesTable() {
+  const { data: wages = [], isLoading } = useWages()
   const [selectedWages, setSelectedWages] = useState<string[]>([])
 
   const toggleWage = (wageId: string) => {
-    setSelectedWages((prev) => (prev.includes(wageId) ? prev.filter((id) => id !== wageId) : [...prev, wageId]))
+    setSelectedWages((prev) =>
+      prev.includes(wageId) ? prev.filter((id) => id !== wageId) : [...prev, wageId]
+    )
   }
 
   const toggleAll = () => {
-    setSelectedWages((prev) => (prev.length === wages.length ? [] : wages.map((wage) => wage.id)))
+    setSelectedWages((prev) =>
+      prev.length === wages.length ? [] : wages.map((wage) => wage._id)
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-10">
+        <p className="text-muted-foreground">Loading wages...</p>
+      </div>
+    )
   }
 
   return (
@@ -133,24 +66,26 @@ export function WagesTable() {
         </TableHeader>
         <TableBody>
           {wages.map((wage) => (
-            <TableRow key={wage.id}>
+            <TableRow key={wage._id}>
               <TableCell>
                 <Checkbox
-                  checked={selectedWages.includes(wage.id)}
-                  onCheckedChange={() => toggleWage(wage.id)}
-                  aria-label={`Select ${wage.number}`}
+                  checked={selectedWages.includes(wage._id)}
+                  onCheckedChange={() => toggleWage(wage._id)}
+                  aria-label={`Select ${wage.poNumber}`}
                 />
               </TableCell>
               <TableCell>{new Date(wage.date).toLocaleDateString()}</TableCell>
-              <TableCell className="font-medium">{wage.number}</TableCell>
+              <TableCell className="font-medium">{wage.poNumber}</TableCell>
               <TableCell>{wage.reference}</TableCell>
               <TableCell>{wage.vendorName}</TableCell>
               <TableCell>{new Date(wage.deliveryDate).toLocaleDateString()}</TableCell>
               <TableCell>
-                <Badge variant={wage.status === "Paid" ? "success" : "secondary"}>{wage.status}</Badge>
+                <Badge variant={wage.status === "Paid" ? "success" : "secondary"}>
+                  {wage.status}
+                </Badge>
               </TableCell>
-              <TableCell>{wage.companyName}</TableCell>
-              <TableCell>{wage.amount}</TableCell>
+              <TableCell>{wage.company}</TableCell>
+              <TableCell>{wage.amount || 0}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -161,20 +96,26 @@ export function WagesTable() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-white" align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      <Link href={`/wages/${wage.id}`}>View Details</Link>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/wages/${wage._id}`}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      <Link href={`/wages/${wage.id}/edit`}>Edit Wage</Link>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/wages/${wage._id}/edit`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Wage
+                      </Link>
                     </DropdownMenuItem>
                     {!wage.billed && (
                       <>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Receipt className="mr-2 h-4 w-4" />
-                          <Link href={`/bills/new?from=${wage.id}`}>Create Bill</Link>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/bills/new?from=${wage._id}`}>
+                            <Receipt className="mr-2 h-4 w-4" />
+                            Create Bill
+                          </Link>
                         </DropdownMenuItem>
                       </>
                     )}

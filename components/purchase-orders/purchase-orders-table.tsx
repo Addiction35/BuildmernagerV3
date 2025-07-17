@@ -29,7 +29,7 @@ export function PurchaseOrdersTable() {
   const queryClient = useQueryClient()
   const { data: purchaseOrders, isLoading } = usePurchases()
 
-  const deletePO = useDeletePO() // ✅ Fix: call the hook to get the mutation function
+  const deletePO = useDeletePO()
 
   const { mutate: deleteOrder, isLoading: isDeleting } = useMutation({
     mutationFn: deletePO,
