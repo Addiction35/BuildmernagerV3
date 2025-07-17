@@ -1,4 +1,5 @@
 "use client"
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, Controller, useFieldArray } from "react-hook-form"
@@ -8,20 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/ui/date-picker"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+// import { DatePicker } from "@/components/ui/date-picker" // Remove this import
+import { DateInputPicker } from "@/components/ui/date-input-picker" // Import the new component
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { useProjects } from "@/lib/hooks/projectQueries"
 import axiosInstance from "@/lib/axios"
@@ -41,8 +32,8 @@ const formSchema = z.object({
   projectId: z.string().min(1),
   company: z.string().min(1),
   status: z.enum(["pending", "in-transit", "delivered"]),
-  date: z.date(),
-  deliveryDate: z.date(),
+  date: z.date(), // This is the start date, must be a Date object
+  deliveryDate: z.date(), // Must be a Date object
   deliveryAddress: z.string(),
   notes: z.string().optional(),
   vendorName: z.string().min(1),
@@ -52,7 +43,6 @@ const formSchema = z.object({
   vendorAddress: z.string().optional(),
   items: z.array(itemSchema).min(1),
 })
-
 
 type FormValues = z.infer<typeof formSchema>
 
@@ -76,8 +66,8 @@ export function PurchaseOrderForm() {
       poNumber: "",
       reference: "",
       projectId: "",
-      date: new Date(),
-      deliveryDate: new Date(),
+      date: new Date(), // Initialize with current date for immediate selection
+      deliveryDate: new Date(), // Initialize with current date for immediate selection
       status: "pending",
       company: "",
       deliveryAddress: "",
@@ -123,13 +113,15 @@ export function PurchaseOrderForm() {
   }
 
   const onSubmit = (data: FormValues) => {
+    // Convert Date objects to ISO strings for API submission
     const payload = {
       ...data,
+      date: data.date.toISOString(),
+      deliveryDate: data.deliveryDate.toISOString(),
       subtotal,
       tax,
       total,
     }
-
     mutate(payload, {
       onSuccess: () => router.push("/purchase-orders"),
       onError: (err) => console.error("Create failed:", err),
@@ -144,61 +136,51 @@ export function PurchaseOrderForm() {
           <TabsTrigger value="vendor">Vendor</TabsTrigger>
           <TabsTrigger value="items">Items</TabsTrigger>
         </TabsList>
-
         {/* GENERAL TAB */}
         <TabsContent value="general" className="space-y-6 pt-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-
             {/* PO Number */}
             <div className="space-y-2">
               <Label htmlFor="poNumber">PO Number</Label>
               <Input id="poNumber" {...register("poNumber")} />
-              {errors.poNumber && (
-                <p className="text-sm text-red-500">{errors.poNumber.message}</p>
-              )}
+              {errors.poNumber && <p className="text-sm text-red-500">{errors.poNumber.message}</p>}
             </div>
-
             {/* Start & Delivery Dates in One Row */}
             <div className="flex flex-col md:flex-row gap-8 py-2.5 w-full">
-              <div className="space-y-2 flex flex-col">
-                <Label htmlFor="start-date">Start Date</Label>
+              {/* Start Date */}
+              <div className="space-y-2 w-full">
+                <Label htmlFor="date">Start Date</Label>
                 <Controller
                   name="date"
                   control={control}
-                  defaultValue={null}
                   render={({ field }) => (
-                    <DatePicker
-                      id="start-date"
-                      selected={field.value}
-                      onChange={field.onChange}
-                    />
+                    <DateInputPicker date={field.value} onDateChange={field.onChange} placeholder="Select start date" />
                   )}
                 />
+                {errors.date && <p className="text-sm text-red-500">{errors.date.message}</p>}
               </div>
-              <div className="space-y-2  flex flex-col">
-                <Label htmlFor="delivery-date">Delivery Date</Label>
+              {/* Delivery Date */}
+              <div className="space-y-2 w-full">
+                <Label htmlFor="deliveryDate">Delivery Date</Label>
                 <Controller
                   name="deliveryDate"
                   control={control}
-                  defaultValue={null}
                   render={({ field }) => (
-                    <DatePicker
-                      id="delivery-date"
-                      selected={field.value}
-                      onChange={field.onChange}
+                    <DateInputPicker
+                      date={field.value}
+                      onDateChange={field.onChange}
+                      placeholder="Select delivery date"
                     />
                   )}
                 />
+                {errors.deliveryDate && <p className="text-sm text-red-500">{errors.deliveryDate.message}</p>}
               </div>
             </div>
-
-
             {/* Reference (optional) */}
             <div className="space-y-2">
               <Label htmlFor="reference">Reference</Label>
               <Input id="reference" {...register("reference")} />
             </div>
-
             {/* Project Select */}
             <div className="space-y-2">
               <Label htmlFor="projectId">Project</Label>
@@ -220,11 +202,8 @@ export function PurchaseOrderForm() {
                   </Select>
                 )}
               />
-              {errors.projectId && (
-                <p className="text-sm text-red-500">{errors.projectId.message}</p>
-              )}
+              {errors.projectId && <p className="text-sm text-red-500">{errors.projectId.message}</p>}
             </div>
-
             {/* Status Select */}
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
@@ -245,7 +224,6 @@ export function PurchaseOrderForm() {
                 )}
               />
             </div>
-
             {/* Company Select */}
             <div className="space-y-2">
               <Label htmlFor="company">Company</Label>
@@ -267,13 +245,11 @@ export function PurchaseOrderForm() {
                 )}
               />
             </div>
-
             {/* Delivery Address */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="deliveryAddress">Delivery Address</Label>
               <Textarea id="deliveryAddress" {...register("deliveryAddress")} />
             </div>
-
             {/* Notes */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="notes">Notes</Label>
@@ -281,7 +257,6 @@ export function PurchaseOrderForm() {
             </div>
           </div>
         </TabsContent>
-
         {/* VENDOR TAB */}
         <TabsContent value="vendor" className="space-y-4 pt-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -316,29 +291,24 @@ export function PurchaseOrderForm() {
                 </ul>
               )}
             </div>
-
             <div className="space-y-2">
               <Label>Contact Person</Label>
               <Input {...register("vendorContact")} />
             </div>
-
             <div className="space-y-2">
               <Label>Email</Label>
               <Input type="email" {...register("vendorEmail")} />
             </div>
-
             <div className="space-y-2">
               <Label>Phone</Label>
               <Input {...register("vendorPhone")} />
             </div>
-
             <div className="space-y-2 md:col-span-2">
               <Label>Address</Label>
               <Textarea {...register("vendorAddress")} />
             </div>
           </div>
         </TabsContent>
-
         {/* ITEMS TAB */}
         <TabsContent value="items" className="space-y-4 pt-4">
           <Card>
@@ -350,7 +320,6 @@ export function PurchaseOrderForm() {
                 <div className="col-span-2 text-right">Unit Price</div>
                 <div className="col-span-1" />
               </div>
-
               {fields.map((item, index) => (
                 <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
                   <div className="col-span-5">
@@ -392,12 +361,16 @@ export function PurchaseOrderForm() {
                   </div>
                 </div>
               ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => append({ description: "", quantity: 1, unit: "", unitPrice: 0 })}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => append({ description: "", quantity: 1, unit: "", unitPrice: 0 })}
+              >
                 Add Item
               </Button>
             </CardContent>
           </Card>
-
           <div className="flex justify-end">
             <div className="w-full max-w-sm space-y-2">
               <div className="flex justify-between text-sm">
@@ -420,7 +393,6 @@ export function PurchaseOrderForm() {
           </div>
         </TabsContent>
       </Tabs>
-
       <div className="mt-6 flex justify-end gap-4">
         <Button type="button" variant="outline" onClick={() => router.push("/purchase-orders")}>
           Cancel

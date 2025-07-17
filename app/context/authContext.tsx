@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from 'jwt-decode';
 import axiosInstance from "@/lib/axios";
 
 interface User {
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (storedUser && token) {
       try {
-        const decoded: any = jwt_decode(token); // Optional: validate expiry or extract info
+        const decoded: any = jwtDecode(token); // Optional: validate expiry or extract info
         console.log("✅ Token decoded:", decoded);
         setUser(JSON.parse(storedUser));
       } catch (err) {
