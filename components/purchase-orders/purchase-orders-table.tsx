@@ -13,99 +13,55 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Edit, Eye, MoreHorizontal, Receipt, Trash } from "lucide-react"
-
-const purchaseOrders = [
-  {
-    id: "PO001",
-    number: "PO-2023-001",
-    date: "2023-06-15",
-    reference: "PRJ001-MAT",
-    vendorName: "ABC Building Supplies",
-    deliveryDate: "2023-06-30",
-    status: "Delivered",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$12,500",
-    project: "Riverside Apartments",
-  },
-  {
-    id: "PO002",
-    number: "PO-2023-002",
-    date: "2023-07-05",
-    reference: "PRJ003-ELE",
-    vendorName: "Electric Systems Co.",
-    deliveryDate: "2023-07-25",
-    status: "In Transit",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$8,750",
-    project: "Hillside Residence",
-  },
-  {
-    id: "PO003",
-    number: "PO-2023-003",
-    date: "2023-07-12",
-    reference: "PRJ002-PLU",
-    vendorName: "Modern Plumbing Supplies",
-    deliveryDate: "2023-08-05",
-    status: "Pending",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$5,200",
-    project: "Downtown Office Renovation",
-  },
-  {
-    id: "PO004",
-    number: "PO-2023-004",
-    date: "2023-08-01",
-    reference: "PRJ001-FIN",
-    vendorName: "Quality Finishes Ltd.",
-    deliveryDate: "2023-08-20",
-    status: "Delivered",
-    billed: true,
-    companyName: "ConstructPro, Inc.",
-    amount: "$15,300",
-    project: "Riverside Apartments",
-  },
-  {
-    id: "PO005",
-    number: "PO-2023-005",
-    date: "2023-08-10",
-    reference: "PRJ004-STR",
-    vendorName: "Structural Materials Inc.",
-    deliveryDate: "2023-09-05",
-    status: "In Transit",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$21,750",
-    project: "Community Center",
-  },
-  {
-    id: "PO006",
-    number: "PO-2023-006",
-    date: "2023-08-18",
-    reference: "PRJ005-FIX",
-    vendorName: "Retail Fixtures Co.",
-    deliveryDate: "2023-09-10",
-    status: "Pending",
-    billed: false,
-    companyName: "ConstructPro, Inc.",
-    amount: "$7,800",
-    project: "Retail Store Fitout",
-  },
-]
+import { useDeletePO, usePurchases } from "@/lib/hooks/purchase-orders"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 export function PurchaseOrdersTable() {
+  const queryClient = useQueryClient()
+  const { data: purchaseOrders, isLoading } = usePurchases()
+
+  const deletePO = useDeletePO() // ✅ Fix: call the hook to get the mutation function
+
+  const { mutate: deleteOrder, isLoading: isDeleting } = useMutation({
+    mutationFn: deletePO,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
+    },
+  })
+
   const [selectedOrders, setSelectedOrders] = useState<string[]>([])
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-10">
+        <p className="text-muted-foreground">Loading purchase orders...</p>
+      </div>
+    )
+  }
+
   const toggleOrder = (orderId: string) => {
-    setSelectedOrders((prev) => (prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]))
+    setSelectedOrders((prev) =>
+      prev.includes(orderId)
+        ? prev.filter((id) => id !== orderId)
+        : [...prev, orderId]
+    )
   }
 
   const toggleAll = () => {
-    setSelectedOrders((prev) => (prev.length === purchaseOrders.length ? [] : purchaseOrders.map((order) => order.id)))
+    setSelectedOrders((prev) =>
+      prev.length === purchaseOrders.length
+        ? []
+        : purchaseOrders.map((order) => order.id)
+    )
   }
 
   return (
@@ -115,7 +71,10 @@ export function PurchaseOrdersTable() {
           <TableRow>
             <TableHead className="w-12">
               <Checkbox
-                checked={selectedOrders.length === purchaseOrders.length && purchaseOrders.length > 0}
+                checked={
+                  selectedOrders.length === purchaseOrders.length &&
+                  purchaseOrders.length > 0
+                }
                 onCheckedChange={toggleAll}
                 aria-label="Select all purchase orders"
               />
@@ -133,30 +92,38 @@ export function PurchaseOrdersTable() {
         </TableHeader>
         <TableBody>
           {purchaseOrders.map((order) => (
-            <TableRow key={order.id}>
+            <TableRow key={order._id}>
               <TableCell>
                 <Checkbox
-                  checked={selectedOrders.includes(order.id)}
-                  onCheckedChange={() => toggleOrder(order.id)}
+                  checked={selectedOrders.includes(order._id)}
+                  onCheckedChange={() => toggleOrder(order._id)}
                   aria-label={`Select ${order.number}`}
                 />
               </TableCell>
-              <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
+              <TableCell>
+                {new Date(order.date).toLocaleDateString()}
+              </TableCell>
               <TableCell className="font-medium">{order.number}</TableCell>
               <TableCell>{order.reference}</TableCell>
               <TableCell>{order.vendorName}</TableCell>
-              <TableCell>{new Date(order.deliveryDate).toLocaleDateString()}</TableCell>
+              <TableCell>
+                {new Date(order.deliveryDate).toLocaleDateString()}
+              </TableCell>
               <TableCell>
                 <Badge
                   variant={
-                    order.status === "Delivered" ? "success" : order.status === "In Transit" ? "default" : "secondary"
+                    order.status === "Delivered"
+                      ? "success"
+                      : order.status === "In Transit"
+                      ? "default"
+                      : "secondary"
                   }
                 >
                   {order.status}
                 </Badge>
               </TableCell>
-              <TableCell>{order.companyName}</TableCell>
-              <TableCell>{order.amount}</TableCell>
+              <TableCell>{order.company}</TableCell>
+              <TableCell>{order.amount || "NA"}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -169,25 +136,35 @@ export function PurchaseOrdersTable() {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem>
                       <Eye className="mr-2 h-4 w-4" />
-                      <Link href={`/purchase-orders/${order.id}`}>View Details</Link>
+                      <Link href={`/purchase-orders/${order._id}`}>
+                        View Details
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Edit className="mr-2 h-4 w-4" />
-                      <Link href={`/purchase-orders/${order.id}/edit`}>Edit PO</Link>
+                      <Link href={`/purchase-orders/${order._id}/edit`}>
+                        Edit PO
+                      </Link>
                     </DropdownMenuItem>
                     {!order.billed && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>
                           <Receipt className="mr-2 h-4 w-4" />
-                          <Link href={`/bills/new?from=${order.id}`}>Create Bill</Link>
+                          <Link href={`/bills/new?from=${order._id}`}>
+                            Create Bill
+                          </Link>
                         </DropdownMenuItem>
                       </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => deleteOrder(order._id)}
+                      disabled={isDeleting}
+                    >
                       <Trash className="mr-2 h-4 w-4" />
-                      Delete Purchase Order
+                      {isDeleting ? "Deleting..." : "Delete Purchase Order"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

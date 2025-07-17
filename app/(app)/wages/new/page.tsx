@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { WageForm } from "@/components/wages/wage-form"
+import {  WagesForm } from "@/components/wages/wage-form"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export default function NewWagePage() {
           <CardDescription>Create a new wage record</CardDescription>
         </CardHeader>
         <CardContent>
-          <WageForm />
+          <WagesForm />
         </CardContent>
       </Card>
     </div>
