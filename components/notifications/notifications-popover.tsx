@@ -76,7 +76,7 @@ export function NotificationsPopover() {
           <span className="sr-only">Notifications</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0 " align="end">
         <div className="flex items-center justify-between border-b p-3">
           <h4 className="font-medium">Notifications</h4>
           <Button variant="ghost" size="sm" onClick={markAllAsRead} disabled={unreadCount === 0}>
@@ -94,7 +94,7 @@ export function NotificationsPopover() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`flex items-start gap-3 rounded-md p-3 text-sm ${!notification.read ? "bg-muted/50" : ""}`}
+                  className={`flex items-start bg-white gap-3 rounded-md p-3 text-sm ${!notification.read ? "bg-muted/50" : ""}`}
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={notification.user.avatar || "/placeholder.svg"} alt={notification.user.name} />

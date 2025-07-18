@@ -61,7 +61,7 @@ export function ProfileNotifications() {
         <CardTitle>Notification Preferences</CardTitle>
         <CardDescription>Choose what notifications you want to receive.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="bg-white">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-4">
