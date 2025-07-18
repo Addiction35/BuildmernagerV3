@@ -75,7 +75,7 @@ export function WagesTable() {
                 />
               </TableCell>
               <TableCell>{new Date(wage.date).toLocaleDateString()}</TableCell>
-              <TableCell className="font-medium">{wage.poNumber}</TableCell>
+              <TableCell className="font-medium">{wage.wageNumber}</TableCell>
               <TableCell>{wage.reference}</TableCell>
               <TableCell>{wage.vendorName}</TableCell>
               <TableCell>{new Date(wage.deliveryDate).toLocaleDateString()}</TableCell>

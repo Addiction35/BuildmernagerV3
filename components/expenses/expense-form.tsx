@@ -31,7 +31,7 @@ const itemSchema = z.object({
 })
 
 const formSchema = z.object({
-  poNumber: z.string().optional(),
+  expenseNumber: z.string().optional(),
   reference: z.string().optional(),
   projectId: z.string().min(1),
   company: z.string().min(1),
@@ -68,7 +68,7 @@ export function ExpenseForm() {
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      poNumber: "",
+      expenseNumber: "",
       reference: "",
       projectId: "",
       date: null, // Initialize with current date for immediate selection
@@ -118,8 +118,8 @@ export function ExpenseForm() {
   }
   const onSubmit = (data: FormValues) => {
     console.log("Form data before formatting:", data)
-    // Destructure `poNumber` out of `data` and remove `subtotal`, `tax`, `total` from the payload.
-    const { poNumber, ...restOfData } = data
+    // Destructure `expenseNumber` out of `data` and remove `subtotal`, `tax`, `total` from the payload.
+    const { expenseNumber, ...restOfData } = data
     const payload = {
       ...restOfData,
       date: restOfData.date.toISOString(),
@@ -137,7 +137,7 @@ export function ExpenseForm() {
         console.error("Create failed:", err)
         toast({
           title: "Error",
-          description: "Failed to create Expense. Please try again.",
+          description: "Failed to create . Please try again.",
           variant: "destructive",
         })
       },
@@ -158,9 +158,9 @@ export function ExpenseForm() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* PO Number */}
               <div className="space-y-2">
-                <Label htmlFor="poNumber">PO Number</Label>
-                <Input id="poNumber" {...register("poNumber")} disabled />
-                {errors.poNumber && <p className="text-sm text-red-500">{errors.poNumber.message}</p>}
+                <Label htmlFor="expenseNumber">Expense Number</Label>
+                <Input id="expenseNumber" {...register("expenseNumber")} disabled />
+                {errors.expenseNumber && <p className="text-sm text-red-500">{errors.expenseNumber.message}</p>}
               </div>
               {/* Start & Delivery Dates in One Row */}
               <div className="grid grid-cols-1 grid-cols-2  py-2 space-x-2  p-0">

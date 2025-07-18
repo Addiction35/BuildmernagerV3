@@ -103,7 +103,7 @@ export function PurchaseOrdersTable() {
               <TableCell>
                 {new Date(order.date).toLocaleDateString()}
               </TableCell>
-              <TableCell className="font-medium">{order.number}</TableCell>
+              <TableCell className="font-medium">{order.poNumber}</TableCell>
               <TableCell>{order.reference}</TableCell>
               <TableCell>{order.vendorName}</TableCell>
               <TableCell>

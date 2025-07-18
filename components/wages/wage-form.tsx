@@ -31,7 +31,7 @@ const itemSchema = z.object({
 })
 
 const formSchema = z.object({
-  poNumber: z.string().optional(),
+  wageNumber: z.string().optional(),
   reference: z.string().optional(),
   projectId: z.string().min(1),
   company: z.string().min(1),
@@ -68,7 +68,7 @@ export function WagesForm() {
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      poNumber: "",
+      wageNumber: "",
       reference: "",
       projectId: "",
       date: null, // Initialize with current date for immediate selection
@@ -118,8 +118,8 @@ export function WagesForm() {
   }
   const onSubmit = (data: FormValues) => {
     console.log("Form data before formatting:", data)
-    // Destructure `poNumber` out of `data` and remove `subtotal`, `tax`, `total` from the payload.
-    const { poNumber, ...restOfData } = data
+    // Destructure `wageNumber` out of `data` and remove `subtotal`, `tax`, `total` from the payload.
+    const { wageNumber, ...restOfData } = data
     const payload = {
       ...restOfData,
       date: restOfData.date.toISOString(),
@@ -158,9 +158,9 @@ export function WagesForm() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* PO Number */}
               <div className="space-y-2">
-                <Label htmlFor="poNumber">PO Number</Label>
-                <Input id="poNumber" {...register("poNumber")} disabled />
-                {errors.poNumber && <p className="text-sm text-red-500">{errors.poNumber.message}</p>}
+                <Label htmlFor="wageNumber">Wage Number</Label>
+                <Input id="wageNumber" {...register("wageNumber")} disabled />
+                {errors.wageNumber && <p className="text-sm text-red-500">{errors.wageNumber.message}</p>}
               </div>
               {/* Start & Delivery Dates in One Row */}
               <div className="grid grid-cols-1 grid-cols-2  py-2 space-x-2  p-0">

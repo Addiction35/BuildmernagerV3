@@ -71,11 +71,11 @@ export function ExpensesTable() {
                 <Checkbox
                   checked={selectedExpenses.includes(expense._id)}
                   onCheckedChange={() => toggleExpense(expense._id)}
-                  aria-label={`Select ${expense.poNumber}`}
+                  aria-label={`Select ${expense._id}`}
                 />
               </TableCell>
               <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
-              <TableCell className="font-medium">{expense.poNumber}</TableCell>
+              <TableCell className="font-medium">{expense.expenseNumber}</TableCell>
               <TableCell>{expense.reference}</TableCell>
               <TableCell>{expense.vendorName}</TableCell>
               <TableCell>{new Date(expense.deliveryDate).toLocaleDateString()}</TableCell>
