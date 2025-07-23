@@ -24,6 +24,8 @@ interface HeaderProps {
 }
 export const Header = () => {
   const {isAuthenticated, user,} = useAuth() || {isAuthenticated: false}
+
+  
   const [notifications, setNotifications] = useState([
     { id: 1, title: "New project assigned", read: false, time: "5 min ago" },
     { id: 2, title: "Estimate approved", read: false, time: "1 hour ago" },
@@ -74,7 +76,7 @@ export const Header = () => {
         </form>
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-4 md:justify-end">
+      <div className="flex flex-1  items-center justify-end gap-4 md:justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
@@ -85,7 +87,7 @@ export const Header = () => {
               <span className="sr-only">Notifications</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuContent align="end" className="w-80 bg-white">
             <DropdownMenuLabel className="flex items-center justify-between">
               <span>Notifications</span>
               <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-xs h-7">
