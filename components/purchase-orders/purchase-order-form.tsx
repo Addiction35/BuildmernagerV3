@@ -405,18 +405,6 @@ export function PurchaseOrderForm() {
             </Card>
             <div className="flex justify-end">
               <div className="w-full max-w-sm space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Tax (10%)</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Shipping</span>
-                  <span>${shipping.toFixed(2)}</span>
-                </div>
                 <div className="border-t pt-2 mt-2 flex justify-between font-medium">
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>

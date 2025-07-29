@@ -53,19 +53,9 @@ const sidebarItems = [
     icon: Building,
   },
   {
-    title: "Teams",
-    href: "/teams",
-    icon: UsersRound,
-  },
-  {
     title: "Estimates",
     href: "/estimates",
     icon: ClipboardList,
-  },
-  {
-    title: "Proposals",
-    href: "/proposals",
-    icon: FileText,
   },
   {
     title: "Purchase Orders",

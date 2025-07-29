@@ -6,10 +6,8 @@ import {
   BarChart3,
   Building2,
   ClipboardList,
-  FileText,
   Home,
   LayoutDashboard,
-  Receipt,
   Settings,
   ShoppingCart,
   Users,
@@ -20,7 +18,6 @@ import {
   CheckSquare,
   UserCircle,
   Building,
-  UsersRound,
   Shield,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -50,19 +47,9 @@ const sidebarItems = [
     icon: Building,
   },
   {
-    title: "Teams",
-    href: "/teams",
-    icon: UsersRound,
-  },
-  {
     title: "Estimates",
     href: "/estimates",
     icon: ClipboardList,
-  },
-  {
-    title: "Proposals",
-    href: "/proposals",
-    icon: FileText,
   },
   {
     title: "Purchase Orders",
