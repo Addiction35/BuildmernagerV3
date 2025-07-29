@@ -120,12 +120,12 @@ const markAllAsRead = () => {
 
         <DropdownMenuSeparator />
 
-        {notifications.length === 0 ? (
+        {notifications?.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
             No notifications
           </div>
         ) : (
-          notifications.map((notification) => (
+          notifications?.map((notification) => (
             <Link
               key={notification._id}
               href={notification.link}

@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EstimateGroups } from "@/components/estimates/estimate-groups"
-import { EstimateSummary } from "@/components/estimates/estimate-summary"
+import { Card, CardContent } from "@/components/ui/card"
 import type { Group, Section, Subsection, EstimateData } from "@/types/estimate"
 import { DownloadIcon } from "lucide-react"
 import { ImportExcelModal } from "@/components/import-excel-modal"
@@ -374,6 +374,15 @@ const handleSubmit = (e: React.FormEvent) => {
     },
   });
 };
+  const subtotal = estimateTotal
+
+  const taxRate = 1.16
+
+  const totalAmount = subtotal * taxRate // Assuming 16% tax rate inclusive VAT
+
+  const taxAmount = totalAmount - subtotal
+  // Calculate grand total
+  const grandTotal = totalAmount
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -475,7 +484,30 @@ const handleSubmit = (e: React.FormEvent) => {
 
       <Separator />
 
-      <EstimateSummary total={estimateTotal} />
+          <div className="space-y-4">
+      <h3 className="text-lg font-medium">Estimate Summary</h3>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Subtotal</span>
+              <span>${estimateTotal.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span>Tax (16%)</span>
+              <span>${taxAmount.toFixed(2)}</span>
+            </div>
+            <div className="border-t pt-2 mt-2">
+              <div className="flex items-center justify-between font-medium">
+                <span>Total</span>
+                <span>{grandTotal.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
 
       <div className="space-y-2">
         <Label htmlFor="notes">Notes</Label>
