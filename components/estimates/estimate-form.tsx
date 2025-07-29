@@ -358,22 +358,7 @@ const estimateTotal = useMemo(() => calculateEstimateTotal(), [estimateData])
 
   const { mutate,isError } = useCreateEstimate();
 
-const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsSubmitting(true);
 
-  mutate(estimateData, {
-    onSuccess: () => {
-      router.push('/estimates'); // Navigate after success
-    },
-    onSettled: () => {
-      setIsSubmitting(false); // Reset form state
-    },
-    onError: (error) => {
-      console.error('Failed to submit estimate:', error);
-    },
-  });
-};
   const subtotal = estimateTotal
 
   const taxRate = 1.16
@@ -383,6 +368,28 @@ const handleSubmit = (e: React.FormEvent) => {
   const taxAmount = totalAmount - subtotal
   // Calculate grand total
   const grandTotal = totalAmount
+
+  const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  const payload = {
+    ...estimateData,
+    amount: grandTotal, // Attached grandTotal as amount
+  };
+
+  mutate(payload, {
+    onSuccess: () => {
+      router.push('/estimates');
+    },
+    onSettled: () => {
+      setIsSubmitting(false);
+    },
+    onError: (error) => {
+      console.error('Failed to submit estimate:', error);
+    },
+  });
+};
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -492,11 +499,11 @@ const handleSubmit = (e: React.FormEvent) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span>Subtotal</span>
-              <span>${estimateTotal.toFixed(2)}</span>
+              <h3><span className="font-bold">KES </span>{estimateTotal.toFixed(2)}</h3>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span>Tax (16%)</span>
-              <span>${taxAmount.toFixed(2)}</span>
+             <h3><span className="font-bold">KES </span>{taxAmount.toFixed(2)}</h3>
             </div>
             <div className="border-t pt-2 mt-2">
               <div className="flex items-center justify-between font-medium">
