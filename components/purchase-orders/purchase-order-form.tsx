@@ -124,6 +124,7 @@ export function PurchaseOrderForm() {
       ...restOfData,
       date: restOfData.date.toISOString(),
       deliveryDate: restOfData.deliveryDate.toISOString(),
+      amount: total,
     }
     mutate(payload, {
       onSuccess: () => {
