@@ -176,7 +176,7 @@ export function WagesForm() {
                         id="date"
                         type="date"
                         value={field.value ? field.value.split("T")[0] : ""}
-                        onChange={(e) => field.onChange(e.target.value)}
+                        onChange={(e) => field.onChange(new Date(e.target.value))}
                       />
                     )}
                   />
@@ -196,7 +196,7 @@ export function WagesForm() {
                         id="deliveryDate"
                         type="date"
                         value={field.value ? field.value.split("T")[0] : ""}
-                        onChange={(e) => field.onChange(e.target.value)}
+                        onChange={(e) => field.onChange(new Date(e.target.value))}
                       />
                     )}
                   />
