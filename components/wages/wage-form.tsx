@@ -124,6 +124,7 @@ export function WagesForm() {
       ...restOfData,
       date: restOfData.date.toISOString(),
       deliveryDate: restOfData.deliveryDate.toISOString(),
+      amount: total,
     }
     mutate(payload, {
       onSuccess: () => {
@@ -159,53 +160,49 @@ export function WagesForm() {
               {/* PO Number */}
               <div className="space-y-2">
                 <Label htmlFor="wageNumber">Wage Number</Label>
-                <Input id="wageNumber" {...register("wageNumber")} disabled />
+                <Input id="wageNumber" placeholder="WG-001 (auto generated)" {...register("wageNumber")} disabled />
                 {errors.wageNumber && <p className="text-sm text-red-500">{errors.wageNumber.message}</p>}
               </div>
               {/* Start & Delivery Dates in One Row */}
-              <div className="grid grid-cols-1 grid-cols-2  py-2 space-x-2  p-0">
+              <div className="grid grid-cols-2 gap-4 py-2">
                 {/* Start Date */}
-                <div className="">
+                <div className="space-y-2">
+                  <Label htmlFor="date">Start Date</Label>
                   <Controller
                     name="date"
                     control={control}
                     render={({ field }) => (
-                      <DatePicker
-                        label="Start Date"
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(newValue) => {
-                          field.onChange(newValue ? newValue.toDate() : null)
-                        }}
-                        renderInput={(params) => (
-                          <TextField {...params} fullWidth error={!!errors.date} helperText={errors.date?.message} />
-                        )}
+                      <Input
+                        id="date"
+                        type="date"
+                        value={field.value ? field.value.split("T")[0] : ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     )}
                   />
+                  {errors.date && (
+                    <p className="text-sm text-red-500">{errors.date.message}</p>
+                  )}
                 </div>
+
                 {/* Delivery Date */}
-                <div className="">
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryDate">Delivery Date</Label>
                   <Controller
                     name="deliveryDate"
                     control={control}
                     render={({ field }) => (
-                      <DatePicker
-                        label="Delivery Date"
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(newValue) => {
-                          field.onChange(newValue ? newValue.toDate() : null)
-                        }}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            fullWidth
-                            error={!!errors.deliveryDate}
-                            helperText={errors.deliveryDate?.message}
-                          />
-                        )}
+                      <Input
+                        id="deliveryDate"
+                        type="date"
+                        value={field.value ? field.value.split("T")[0] : ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     )}
                   />
+                  {errors.deliveryDate && (
+                    <p className="text-sm text-red-500">{errors.deliveryDate.message}</p>
+                  )}
                 </div>
               </div>
               {/* Reference (optional) */}
@@ -235,26 +232,6 @@ export function WagesForm() {
                   )}
                 />
                 {errors.projectId && <p className="text-sm text-red-500">{errors.projectId.message}</p>}
-              </div>
-              {/* Status Select */}
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Controller
-                  control={control}
-                  name="status"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="status">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="in-transit">In Transit</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
               </div>
               {/* Company Select */}
               <div className="space-y-2">

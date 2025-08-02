@@ -17,51 +17,7 @@ import { MoreHorizontal, Search, UserCog, UserMinus, UserX, Filter } from "lucid
 import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-
-
-// Mock data for users
-const users = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "Admin",
-    status: "Active",
-    lastActive: "2 hours ago",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    role: "Project Manager",
-    status: "Active",
-    lastActive: "5 minutes ago",
-  },
-  {
-    id: "3",
-    name: "Robert Johnson",
-    email: "robert.johnson@example.com",
-    role: "Estimator",
-    status: "Inactive",
-    lastActive: "3 days ago",
-  },
-  {
-    id: "4",
-    name: "Emily Davis",
-    email: "emily.davis@example.com",
-    role: "Accountant",
-    status: "Active",
-    lastActive: "1 day ago",
-  },
-  {
-    id: "5",
-    name: "Michael Wilson",
-    email: "michael.wilson@example.com",
-    role: "Site Supervisor",
-    status: "Active",
-    lastActive: "4 hours ago",
-  },
-]
+import { useUsers } from "@/lib/hooks/userQueries"
 
 export function UsersTable() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -69,14 +25,25 @@ export function UsersTable() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
 
-  // Filter users based on search term and filters
+  const { data: users, isLoading } = useUsers()
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!users || users.length === 0) {
+    return <div>No Users available</div>
+  }
+
+  console.log(users)
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
+    const matchesRole = roleFilter === "all" || user?.role === roleFilter
+    const matchesStatus = statusFilter === "all" || user?.status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
   })
@@ -110,9 +77,9 @@ export function UsersTable() {
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by role" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="Project Manager">Project Manager</SelectItem>
                     <SelectItem value="Estimator">Estimator</SelectItem>
                     <SelectItem value="Accountant">Accountant</SelectItem>
@@ -126,10 +93,10 @@ export function UsersTable() {
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -159,18 +126,22 @@ export function UsersTable() {
               </TableRow>
             ) : (
               filteredUsers.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user?.id ?? Math.random()}>
                   <TableCell className="font-medium">
-                    <Link href={`/admin/users/${user.id}`} className="hover:underline">
-                      {user.name}
+                    <Link href={`/admin/users/${user?.id ?? ""}`} className="hover:underline">
+                      {user?.name ?? "Unknown"}
                     </Link>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
+                  <TableCell className="hidden md:table-cell">{user?.email ?? "N/A"}</TableCell>
+                  <TableCell>{user?.role ?? "N/A"}</TableCell>
                   <TableCell className="hidden md:table-cell">
-                    <Badge variant={user.status === "Active" ? "default" : "secondary"}>{user.status}</Badge>
+                    <Badge variant={user?.status === "Active" ? "default" : "secondary"}>
+                      {user?.status ?? "Unknown"}
+                    </Badge>
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell text-muted-foreground">{user.lastActive}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-muted-foreground">
+                    {user?.lastActive ?? "N/A"}
+                  </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -179,11 +150,11 @@ export function UsersTable() {
                           <span className="sr-only">Open menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="bg-white">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href={`/admin/users/${user.id}`}>
+                          <Link href={`/admin/users/${user?._id ?? ""}`}>
                             <UserCog className="mr-2 h-4 w-4" />
                             Edit User
                           </Link>

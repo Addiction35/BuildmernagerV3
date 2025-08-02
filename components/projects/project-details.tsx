@@ -60,7 +60,14 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
               </div>
               <div>
                 <p className="text-sm font-medium">Value</p>
-                <p className="text-sm text-muted-foreground">{project.value}</p>
+                <p className="text-sm text-muted-foreground">{project?.value != null
+                                                              ? new Intl.NumberFormat("en-KE", {
+                                                                  style: "currency",
+                                                                  currency: "KES",
+                                                                  minimumFractionDigits: 2,
+                                                                }).format(project.value)
+                                                              : "N/A"}
+                                                            </p>
               </div>
               <div>
                 <p className="text-sm font-medium">Progress</p>

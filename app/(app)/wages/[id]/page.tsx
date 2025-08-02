@@ -45,6 +45,15 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
   if (error) return <div className="text-center py-10 text-red-500">Error loading purchase order</div>
   if (!purchaseOrder) return notFound()
 
+    // ✅ Calculate subtotal from all items
+const subtotal = purchaseOrder.items?.reduce((acc, item) => {
+  const amount =
+    typeof item.amount === "number"
+      ? item.amount
+      : (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+  return acc + amount;
+}, 0) || 0;
+
   return (
     <div ref={printRef} className="flex flex-col gap-8 p-6 bg-white">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between print:hidden">
@@ -188,10 +197,16 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
                         <td className="p-3 text-center">{item.quantity ?? 0}</td>
                         <td className="p-3 text-center">{item.unit || "-"}</td>
                         <td className="p-3 text-right">
-                          ${item.unitPrice?.toFixed(2) ?? "0.00"}
+                          {item.unitPrice?.toFixed(2) ?? "0.00"}
                         </td>
                         <td className="p-3 text-right">
-                          ${item.amount?.toFixed(2) ?? "0.00"}
+                          {(() => {
+                            const amount =
+                              typeof item.amount === "number"
+                                ? item.amount
+                                : (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+                            return `${amount.toFixed(2)}`;
+                          })()}
                         </td>
                       </tr>
                     ))
@@ -204,21 +219,18 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
                   )}
                 </tbody>
                 <tfoot>
-                  {Object.entries({
-                    Subtotal: purchaseOrder.subtotal,
-                    Tax: purchaseOrder.tax,
-                    Shipping: purchaseOrder.shipping,
-                    Total: purchaseOrder.total,
-                  }).map(([key, value]) => (
-                    <tr key={key} className="border-t font-medium">
-                      <td colSpan={4} className="p-3 text-right">
-                        {key}
-                      </td>
-                      <td className="p-3 text-right">
-                        ${value?.toFixed(2) ?? "0.00"}
-                      </td>
-                    </tr>
-                  ))}
+                  <tr className="border-t font-medium">
+                    <td colSpan={4} className="p-3 text-right">Subtotal</td>
+                    <td className="p-3 text-right">{subtotal.toFixed(2)}</td>
+                  </tr>
+                  <tr className="border-t font-medium">
+                    <td colSpan={4} className="p-3 text-right">Tax</td>
+                    <td className="p-3 text-right">{purchaseOrder.tax?.toFixed(2) ?? "0.00"}</td>
+                  </tr>
+                  <tr className="border-t font-bold">
+                    <td colSpan={4} className="p-3 text-right">Total</td>
+                    <td className="p-3 text-right">{purchaseOrder.amount?.toFixed(2) ?? "0.00"}</td>
+                  </tr>
                 </tfoot>
               </table>
             </div>

@@ -1,155 +1,298 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  flexRender,
+  ColumnDef,
+  ColumnFiltersState,
+  PaginationState,
+} from "@tanstack/react-table"
 import Link from "next/link"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Edit, Eye, MoreHorizontal, Trash } from "lucide-react"
-import {  useDeleteProject, useProjects } from "@/lib/hooks/projectQueries"
+import {
+  Eye,
+  Edit,
+  Trash,
+  MoreHorizontal,
+  ChevronsUpDown,
+  ChevronUp,
+  ChevronDown,
+  Search,
+  Filter,
+} from "lucide-react"
+
+import { useProjects, useDeleteProject } from "@/lib/hooks/projectQueries"
 import { toast } from "sonner"
 
 export function ProjectsTable() {
-  const [selectedProjects, setSelectedProjects] = useState<string[]>([])
+  const [globalFilter, setGlobalFilter] = useState("")
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
 
-  const { data: projects, isLoading } = useProjects()
-console.log(projects);
-  const toggleProject = (projectId: string) => {
-    setSelectedProjects((prev) =>
-      prev.includes(projectId) ? prev.filter((id) => id !== projectId) : [...prev, projectId],
-    )
+  const { data: projects = [], isLoading } = useProjects()
+  const deleteMutation = useDeleteProject()
+
+  const handleDelete = (id: string) => {
+    if (confirm("Delete this project?")) {
+      toast.promise(deleteMutation.mutateAsync(id), {
+        loading: "Deleting...",
+        success: "Deleted",
+        error: "Error deleting project",
+      })
+    }
   }
 
-  const toggleAll = () => {
-    setSelectedProjects((prev) => (prev.length === projects.length ? [] : projects.map((project) => project.id)))
-  }
+  const columns = useMemo<ColumnDef<any>[]>(() => [
+    // ✅ Row Number Column
+    {
+      id: "number",
+      header: "#",
+      cell: ({ row }) => row.index + 1,
+    },
 
-  const deleteMutation = useDeleteProject();
+    {
+      accessorKey: "name",
+      header: ({ column }) => <SortableHeader column={column} label="Project" />,
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.original.name}</div>
+          <div className="text-xs text-muted-foreground">{row.original.location}</div>
+        </div>
+      ),
+    },
 
-const handleDelete = (id: string) => {
-  if (confirm("Are you sure you want to delete this project?")) {
-    toast.promise(
-      deleteMutation.mutateAsync(id),
-      {
-        loading: "Deleting Project...",
-        success: "Project deleted successfully",
-        error: "Failed to delete Project",
-      }
-    )
-  }
-}
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
+    {
+      accessorKey: "client.primaryContact",
+      header: "Client",
+      cell: ({ row }) => row.original.client?.primaryContact || "-",
+    },
 
-  if (!projects || projects.length === 0) 
-  {
-    return <div>No projects available</div>;
-  }
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status
+        const variant =
+          status === "Completed"
+            ? "success"
+            : status === "In Progress"
+            ? "default"
+            : status === "planning"
+            ? "secondary"
+            : "outline"
+        return <Badge variant={variant}>{status}</Badge>
+      },
+      filterFn: (row, id, value) => value === "All" || row.getValue(id) === value,
+    },
+
+    // ✅ Value Column with Currency
+    {
+      accessorKey: "value",
+      header: ({ column }) => <SortableHeader column={column} label="Value" />,
+      cell: ({ row }) =>
+        `Ksh ${Number(row.original.value).toLocaleString("en-KE", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
+    },
+
+    {
+      accessorKey: "startDate",
+      header: "Start",
+      cell: ({ row }) => new Date(row.original.startDate).toLocaleDateString(),
+    },
+
+    {
+      accessorKey: "timeline",
+      header: "Timeline",
+      cell: ({ row }) => {
+        const { startDate, endDate } = row.original
+        return (
+          <div className="text-xs">
+            {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
+          </div>
+        )
+      },
+    },
+
+    {
+      id: "actions",
+      header: () => <div className="text-right">Actions</div>,
+      cell: ({ row }) => {
+        const id = row.original._id
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link href={`/projects/${id}`}>
+                  <Eye className="mr-2 h-4 w-4" /> View
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/projects/${id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" /> Edit
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleDelete(id)}
+                className="text-destructive"
+              >
+                <Trash className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ], [])
+
+  const table = useReactTable({
+    data: projects,
+    columns,
+    state: { globalFilter, columnFilters, pagination },
+    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  })
+
+  const sortByNewest = () => table.setSorting([{ id: "startDate", desc: true }])
+  const sortByAlphabet = () => table.setSorting([{ id: "name", desc: false }])
+
+  if (isLoading) return <div>Loading...</div>
+  if (!projects.length) return <div>No projects available</div>
+
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Checkbox
-                checked={selectedProjects.length === projects.length && projects.length > 0}
-                onCheckedChange={toggleAll}
-                aria-label="Select all projects"
-              />
-            </TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Value</TableHead>
-            <TableHead>Progress</TableHead>
-            <TableHead>Timeline</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {projects.map((project) => (
-            <TableRow key={project._id}>
-              <TableCell>
-                <Checkbox
-                  checked={selectedProjects.includes(project._id)}
-                  onCheckedChange={() => toggleProject(project._id)}
-                  aria-label={`Select ${project.name}`}
-                />
-              </TableCell>
-              <TableCell className="font-medium">
-                <div className="font-medium">{project.name}</div>
-                <div className="text-xs text-muted-foreground">{project.location}</div>
-              </TableCell>
-              <TableCell>{project.client?.primaryContact}</TableCell>
-              <TableCell>
-                <Badge
-                  variant={
-                    project.status === "Completed"
-                      ? "success"
-                      : project.status === "In Progress"
-                        ? "default"
-                        : project.status === "Planning"
-                          ? "secondary"
-                          : "outline"
-                  }
-                >
-                  {project.status}
-                </Badge>
-              </TableCell>
-              <TableCell>{project.value}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-full rounded-full bg-secondary">
-                    <div className="h-full rounded-full bg-primary" style={{ width: project.progress }} />
-                  </div>
-                  <span className="text-xs font-medium">{project.progress}</span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="text-xs">
-                  {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
-                </div>
-              </TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem>
-                      <Eye className="mr-2 h-4 w-4" />
-                      <Link href={`/projects/${project._id}`}>View Details</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="mr-2 h-4 w-4" />
-                      <Link href={`/projects/${project._id}/edit`}>Edit Project</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleDelete(project._id)} className="text-destructive">
-                      <Trash className="mr-2 h-4 w-4" />
-                      Delete Project
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search..."
+            value={globalFilter ?? ""}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Filter className="h-4 w-4" /> Filter
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-46 bg-white">
+              <DropdownMenuLabel className="pt-2">Sort</DropdownMenuLabel>
+              <DropdownMenuItem onClick={sortByNewest}>Newest First</DropdownMenuItem>
+              <DropdownMenuItem onClick={sortByAlphabet}>Alphabet (A-Z)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <TableHead
+                    key={header.id}
+                    className="bg-blue-200 font-bold text-base"
+                  >
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+
+          <TableBody>
+            {table.getRowModel().rows.map(row => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-1 py-2">
+        <div className="text-sm text-muted-foreground">
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
+  )
+}
+
+function SortableHeader({ column, label }: { column: any; label: string }) {
+  const sorted = column.getIsSorted()
+  return (
+    <Button
+      variant="ghost"
+      className="pl-0 hover:bg-transparent"
+      onClick={() => column.toggleSorting(sorted === "asc")}
+    >
+      {label}
+      {sorted === "asc" ? (
+        <ChevronUp className="ml-2 h-4 w-4" />
+      ) : sorted === "desc" ? (
+        <ChevronDown className="ml-2 h-4 w-4" />
+      ) : (
+        <ChevronsUpDown className="ml-2 h-4 w-4" />
+      )}
+    </Button>
   )
 }

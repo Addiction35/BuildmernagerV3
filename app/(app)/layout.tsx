@@ -8,9 +8,6 @@ import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { QueryClient } from "@tanstack/react-query"
-import { LocalizationProvider } from '@mui/x-date-pickers'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null)  // State to store user data
 
@@ -32,9 +29,8 @@ const queryClient = new QueryClient()
           <Header user={user}/>
           <div className="flex flex-1">
             <Sidebar />
-               <LocalizationProvider dateAdapter={AdapterDayjs}>
             <main className="flex-1 p-4 md:p-6 lg:p-8 w-full overflow-x-hidden">{children}</main>
-              </LocalizationProvider>
+
           </div>
         </div>
         <Toaster position="top-right" reverseOrder={false} />

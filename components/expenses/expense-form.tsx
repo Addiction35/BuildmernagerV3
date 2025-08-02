@@ -15,11 +15,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useProjects } from "@/lib/hooks/projectQueries"
 import axiosInstance from "@/lib/axios"
 import { AutocompleteInput } from "../AutoCompleteItems"
-import { DatePicker } from "@mui/x-date-pickers/DatePicker"
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
-import TextField from "@mui/material/TextField"
-import dayjs from "dayjs"
 import { useToast } from "@/hooks/use-toast" // Import useToast
 import { useCreateExpense } from "@/lib/hooks/expenseQueries"
 
@@ -35,7 +30,6 @@ const formSchema = z.object({
   reference: z.string().optional(),
   projectId: z.string().min(1),
   company: z.string().min(1),
-  status: z.enum(["pending", "in-transit", "delivered"]),
   date: z.date(), // This is the start date, must be a Date object
   deliveryDate: z.date(), // Must be a Date object
   deliveryAddress: z.string(),
@@ -73,7 +67,6 @@ export function ExpenseForm() {
       projectId: "",
       date: null, // Initialize with current date for immediate selection
       deliveryDate: null, // Initialize with current date for immediate selection
-      status: "pending",
       company: "",
       deliveryAddress: "",
       notes: "",
@@ -124,6 +117,7 @@ export function ExpenseForm() {
       ...restOfData,
       date: restOfData.date.toISOString(),
       deliveryDate: restOfData.deliveryDate.toISOString(),
+      amount: total,
     }
     mutate(payload, {
       onSuccess: () => {
@@ -145,7 +139,6 @@ export function ExpenseForm() {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Tabs defaultValue="general" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -159,53 +152,49 @@ export function ExpenseForm() {
               {/* PO Number */}
               <div className="space-y-2">
                 <Label htmlFor="expenseNumber">Expense Number</Label>
-                <Input id="expenseNumber" {...register("expenseNumber")} disabled />
+                <Input id="expenseNumber" placeholder="EXP-001 (auto generated)" {...register("expenseNumber")} disabled />
                 {errors.expenseNumber && <p className="text-sm text-red-500">{errors.expenseNumber.message}</p>}
               </div>
               {/* Start & Delivery Dates in One Row */}
-              <div className="grid grid-cols-1 grid-cols-2  py-2 space-x-2  p-0">
+              <div className="grid grid-cols-2 gap-4 py-2">
                 {/* Start Date */}
-                <div className="">
+                <div className="space-y-2">
+                  <Label htmlFor="date">Start Date</Label>
                   <Controller
                     name="date"
                     control={control}
                     render={({ field }) => (
-                      <DatePicker
-                        label="Start Date"
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(newValue) => {
-                          field.onChange(newValue ? newValue.toDate() : null)
-                        }}
-                        renderInput={(params) => (
-                          <TextField {...params} fullWidth error={!!errors.date} helperText={errors.date?.message} />
-                        )}
+                      <Input
+                        id="date"
+                        type="date"
+                        value={field.value ? field.value.split("T")[0] : ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     )}
                   />
+                  {errors.date && (
+                    <p className="text-sm text-red-500">{errors.date.message}</p>
+                  )}
                 </div>
+
                 {/* Delivery Date */}
-                <div className="">
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryDate">Delivery Date</Label>
                   <Controller
                     name="deliveryDate"
                     control={control}
                     render={({ field }) => (
-                      <DatePicker
-                        label="Delivery Date"
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(newValue) => {
-                          field.onChange(newValue ? newValue.toDate() : null)
-                        }}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            fullWidth
-                            error={!!errors.deliveryDate}
-                            helperText={errors.deliveryDate?.message}
-                          />
-                        )}
+                      <Input
+                        id="deliveryDate"
+                        type="date"
+                        value={field.value ? field.value.split("T")[0] : ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     )}
                   />
+                  {errors.deliveryDate && (
+                    <p className="text-sm text-red-500">{errors.deliveryDate.message}</p>
+                  )}
                 </div>
               </div>
               {/* Reference (optional) */}
@@ -235,26 +224,6 @@ export function ExpenseForm() {
                   )}
                 />
                 {errors.projectId && <p className="text-sm text-red-500">{errors.projectId.message}</p>}
-              </div>
-              {/* Status Select */}
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Controller
-                  control={control}
-                  name="status"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="status">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="in-transit">In Transit</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
               </div>
               {/* Company Select */}
               <div className="space-y-2">
@@ -434,6 +403,5 @@ export function ExpenseForm() {
           </Button>
         </div>
       </form>
-    </LocalizationProvider>
   )
 }

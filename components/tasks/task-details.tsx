@@ -2,9 +2,11 @@
 
 import type React from "react"
 
-import { useState } from "react"
+
+import { useState, use } from "react"
 import Link from "next/link"
 import { ArrowLeft, Calendar, CheckCircle, Clock, Download, FileText, Paperclip } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,43 +17,24 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { fetchTaskById } from "@/lib/api/tasks" // Replace with your actual API
 
-interface Comment {
-  id: number
-  user: string
-  text: string
-  date: string
-}
-
-interface Attachment {
-  id: number
-  name: string
-  size: string
-  uploadedBy: string
-  date: string
-}
-
-interface Task {
-  id: string
-  title: string
-  description: string
-  status: string
-  priority: string
-  assignee: string
-  project: string
-  startDate: string
-  dueDate: string
-  completionPercentage: number
-  comments: Comment[]
-  attachments: Attachment[]
-}
-
-interface TaskDetailsProps {
-  task: Task
-}
-
-export function TaskDetails({ task }: TaskDetailsProps) {
+export default function TaskDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params) 
   const [newComment, setNewComment] = useState("")
+
+  const {
+    data: task,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["task", id],
+    queryFn: () => fetchTaskById(id),
+    enabled: !!id,
+  })
+
+  if (isLoading) return <p className="text-center py-10">Loading task...</p>
+  if (error || !task) return <p className="text-center py-10 text-red-500">Task not found</p>
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -83,18 +66,16 @@ export function TaskDetails({ task }: TaskDetailsProps) {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     })
-  }
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would submit the comment to your API
+    // API call to add comment
     setNewComment("")
   }
 

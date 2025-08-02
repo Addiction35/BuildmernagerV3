@@ -16,8 +16,6 @@ import { useCreateProject } from "@/lib/hooks/projectQueries"
 import { useGetClients } from "@/lib/hooks/clientQueries"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "react-hot-toast";
-
-
 export function ProjectForm() {
   const router = useRouter()
   const { mutate, isLoading, isError, isSuccess } = useCreateProject();
@@ -58,10 +56,6 @@ const onSubmit = (data) => {
   });
 };
 
-
-  
-  
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Tabs defaultValue="general" className="w-full">
@@ -95,7 +89,7 @@ const onSubmit = (data) => {
                     <SelectContent className="bg-white">
                       {clients?.map((client) => (
                         <SelectItem key={client._id} value={client._id}>
-                          {client.companyName}
+                          {client?.companyName}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -117,7 +111,7 @@ const onSubmit = (data) => {
               name="status"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value || ""} onValueChange={field.onChange}>
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -137,7 +131,14 @@ const onSubmit = (data) => {
               <Controller
                 name="startDate"
                 control={control}
-                render={({ field }) => <DatePicker {...field} />}
+                render={({ field }) => (
+                  <Input
+                    id="start-date"
+                    type="date"
+                    value={field.value ? field.value.split("T")[0] : ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
               />
             </div>
             <div className="space-y-2">
@@ -145,7 +146,14 @@ const onSubmit = (data) => {
               <Controller
                 name="endDate"
                 control={control}
-                render={({ field }) => <DatePicker {...field} />}
+                render={({ field }) => (
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={field.value ? field.value.split("T")[0] : ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
               />
             </div>
             <div className="space-y-2 md:col-span-2">
