@@ -193,18 +193,18 @@ export function TaskForm() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <FormLabel>Start Date</FormLabel>
-                  <Controller
-                    name="startDate"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={field.value ? field.value.split("T")[0] : ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    )}
-                  />
+                <Controller
+                  name="startDate"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                    />
+                  )}
+                />
                 {errors.startDate && (
                   <p className="text-sm text-red-500">{errors.startDate.message}</p>
                 )}
@@ -212,18 +212,18 @@ export function TaskForm() {
 
               <div className="space-y-2">
                 <FormLabel>Due Date</FormLabel>
-                  <Controller
-                    name="dueDate"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        id="dueDate"
-                        type="date"
-                        value={field.value ? field.value.split("T")[0] : ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    )}
-                  />
+                <Controller
+                  name="dueDate"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      id="dueDate"
+                      type="date"
+                      value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                    />
+                  )}
+                />
                 {errors.dueDate && (
                   <p className="text-sm text-red-500">{errors.dueDate.message}</p>
                 )}
