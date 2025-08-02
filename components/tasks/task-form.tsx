@@ -75,6 +75,7 @@ export function TaskForm() {
         })
       },
     })
+  }
 
   return (
     <Card>
@@ -182,30 +183,6 @@ export function TaskForm() {
               )}
             </div>
           </div>
-              <div className="space-y-2">
-                <FormLabel htmlFor="priority">Priority</FormLabel>
-                <Controller
-                  control={control}
-                  name="priority"
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="priority">
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        <SelectItem value="Low">Low</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="High">High</SelectItem>
-                        <SelectItem value="Urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.priority && (
-                  <p className="text-sm text-red-500">{errors.priority.message}</p>
-                )}
-              </div>
-            </div>
 
           {/* Start Date & Due Date */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
