@@ -167,7 +167,7 @@ export function PurchaseOrderForm() {
                       <Input
                         id="date"
                         type="date"
-                        value={field.value ? field.value.split("T")[0] : ""}
+                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
                         onChange={(e) => field.onChange(new Date(e.target.value))}
                       />
                     )}
@@ -187,7 +187,7 @@ export function PurchaseOrderForm() {
                       <Input
                         id="deliveryDate"
                         type="date"
-                        value={field.value ? field.value.split("T")[0] : ""}
+                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
                         onChange={(e) => field.onChange(new Date(e.target.value))}
                       />
                     )}

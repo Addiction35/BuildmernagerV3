@@ -170,7 +170,7 @@ export function WagesForm() {
                       <Input
                         id="date"
                         type="date"
-                        value={field.value ? field.value.split("T")[0] : ""}
+                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
                         onChange={(e) => field.onChange(new Date(e.target.value))}
                       />
                     )}
@@ -190,7 +190,7 @@ export function WagesForm() {
                       <Input
                         id="deliveryDate"
                         type="date"
-                        value={field.value ? field.value.split("T")[0] : ""}
+                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
                         onChange={(e) => field.onChange(new Date(e.target.value))}
                       />
                     )}
