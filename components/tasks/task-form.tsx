@@ -242,10 +242,10 @@ export function TaskForm() {
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent className="bg-white">
-                      <SelectItem value="todo">To Do</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="review">Review</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="On Hold">On Hold</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
