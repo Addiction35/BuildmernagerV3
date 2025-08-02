@@ -26,7 +26,7 @@ export default function ProjectsPage() {
           <CardTitle>All Projects</CardTitle>
           <CardDescription>View and manage all your construction projects</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-1.5">
           <ProjectsTable />
         </CardContent>
       </Card>
