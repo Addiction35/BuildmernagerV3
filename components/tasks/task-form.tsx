@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
@@ -21,12 +20,14 @@ import { toast } from "@/components/ui/use-toast"
 import { Label } from "@/components/ui/label"
 import { useProjects } from "@/lib/hooks/projectQueries"
 import { cn } from "@/lib/utils"
+import {  useUsers } from "@/lib/hooks/userQueries"
+import { useCreateTask } from "@/lib/hooks/taskQueries"
 
 // 📝 Define validation schema with Zod
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   project: z.string().min(1, "Project is required"),
-  assignee: z.string().min(1, "Assignee is required"),
+  assignedTo: z.string().min(1, "Assignee is required"),
   priority: z.string().min(1, "Priority is required"),
   status: z.string().min(1, "Status is required"),
   description: z.string().optional(),
@@ -38,7 +39,10 @@ type TaskFormValues = z.infer<typeof taskSchema>
 
 export function TaskForm() {
   const { data: projects } = useProjects()
+  const { data: users } = useUsers()
   const router = useRouter()
+
+  const {mutate, isLoading, isSuccess} = useCreateTask();
 
   const {
     control,
@@ -49,7 +53,7 @@ export function TaskForm() {
     defaultValues: {
       title: "",
       project: "",
-      assignee: "",
+      assignedTo: "",
       priority: "",
       status: "",
       description: "",
@@ -60,13 +64,22 @@ export function TaskForm() {
 
   const onSubmit = async (data: TaskFormValues) => {
     console.log("Form Data:", data)
-
-    // In a real app, submit data to API
-    toast({
-      title: "Task created",
-      description: "Your task has been created successfully.",
+    mutate(data, {
+      onSuccess: () => {
+        toast({
+          title: "Task created",
+          description: "Your task has been created successfully.",
+        })
+        router.push("/tasks")
+      },
+      onError: (error) => {
+        toast({
+          title: "Error creating task",
+          description: error.message || "Something went wrong",
+          variant: "destructive",
+        })
+      },
     })
-    router.push("/tasks")
   }
 
   return (
@@ -127,25 +140,27 @@ export function TaskForm() {
             {/* Row 2: Assignee and Priority */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <FormLabel htmlFor="assignee">Assignee</FormLabel>
+                <FormLabel htmlFor="assignedTo">Assignee</FormLabel>
                 <Controller
                   control={control}
-                  name="assignee"
+                  name="assignedTo"
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="assignee">
                         <SelectValue placeholder="Select assignee" />
                       </SelectTrigger>
                       <SelectContent className="bg-white">
-                        <SelectItem value="user1">John Doe</SelectItem>
-                        <SelectItem value="user2">Jane Smith</SelectItem>
-                        <SelectItem value="user3">Robert Johnson</SelectItem>
+                        {users?.map((user) => (
+                          <SelectItem key={user._id} value={user._id}>
+                            {user.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )}
                 />
-                {errors.assignee && (
-                  <p className="text-sm text-red-500">{errors.assignee.message}</p>
+                {errors.assignedTo && (
+                  <p className="text-sm text-red-500">{errors.assignedTo.message}</p>
                 )}
               </div>
 
@@ -178,34 +193,18 @@ export function TaskForm() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <FormLabel>Start Date</FormLabel>
-                <Controller
-                  control={control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, "PPP") : "Select date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                />
+                  <Controller
+                    name="startDate"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        id="startDate"
+                        type="date"
+                        value={field.value ? field.value.split("T")[0] : ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    )}
+                  />
                 {errors.startDate && (
                   <p className="text-sm text-red-500">{errors.startDate.message}</p>
                 )}
@@ -213,34 +212,18 @@ export function TaskForm() {
 
               <div className="space-y-2">
                 <FormLabel>Due Date</FormLabel>
-                <Controller
-                  control={control}
-                  name="dueDate"
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, "PPP") : "Select date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                />
+                  <Controller
+                    name="dueDate"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        id="dueDate"
+                        type="date"
+                        value={field.value ? field.value.split("T")[0] : ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
+                    )}
+                  />
                 {errors.dueDate && (
                   <p className="text-sm text-red-500">{errors.dueDate.message}</p>
                 )}
@@ -294,7 +277,8 @@ export function TaskForm() {
           <Button variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit">Create Task</Button>
+          <Button type="submit" disabled={isLoading} >
+            {isLoading ? "creating" : "Create Task"}</Button>
         </CardFooter>
       </form>
     </Card>
