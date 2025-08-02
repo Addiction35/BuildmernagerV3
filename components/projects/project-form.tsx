@@ -131,7 +131,14 @@ const onSubmit = (data) => {
               <Controller
                 name="startDate"
                 control={control}
-                render={({ field }) => <DatePicker {...field} />}
+                render={({ field }) => (
+                  <Input
+                    id="start-date"
+                    type="date"
+                    value={field.value ? field.value.split("T")[0] : ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
               />
             </div>
             <div className="space-y-2">
@@ -139,7 +146,14 @@ const onSubmit = (data) => {
               <Controller
                 name="endDate"
                 control={control}
-                render={({ field }) => <DatePicker {...field} />}
+                render={({ field }) => (
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={field.value ? field.value.split("T")[0] : ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
               />
             </div>
             <div className="space-y-2 md:col-span-2">
