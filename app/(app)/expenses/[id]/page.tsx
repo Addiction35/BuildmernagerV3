@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Download, Printer, Receipt } from "lucide-react"
 import { useReactToPrint } from "react-to-print"
 import { use } from "react"
-import { fetchWageById } from "@/lib/api/wages"
 import { fetchExpenseById } from "@/lib/api/Expenses"
 
 export default function PurchaseOrderPage({ params }: { params: Promise<{ id: string }> }) {
