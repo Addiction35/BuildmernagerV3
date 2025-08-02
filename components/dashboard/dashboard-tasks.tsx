@@ -52,8 +52,8 @@ export function DashboardTasks({ limit, extended = false }: DashboardTasksProps)
               <TableCell className="font-medium">{task.title}</TableCell>
               {extended && (
                 <TableCell>
-                  <Link href={`/projects/${task.projectId}`} className="text-blue-600 hover:underline">
-                    {task.project}
+                  <Link href={`/projects/${task.project._id}`} className="text-blue-600 hover:underline">
+                    {task.project.name}
                   </Link>
                 </TableCell>
               )}

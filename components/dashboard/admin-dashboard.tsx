@@ -13,8 +13,13 @@ import { DashboardWages } from "@/components/dashboard/dashboard-wages"
 import { DashboardExpenses } from "@/components/dashboard/dashboard-expenses"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardPieChart } from "@/components/dashboard/dashboard-pie-chart"
+import { usePurchases } from "@/lib/hooks/purchase-orders"
 
 export function AdminDashboard() {
+
+    
+    
+
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader title="Admin Dashboard" description="Complete system overview and management" />
@@ -28,7 +33,6 @@ export function AdminDashboard() {
           <TabsTrigger value="financials">Financials</TabsTrigger>
           <TabsTrigger value="operations">Operations</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
@@ -207,23 +211,6 @@ export function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <DashboardTasks extended={true} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="resources" className="pt-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div className="space-y-1">
-                <CardTitle>Resource Management</CardTitle>
-                <CardDescription>Equipment, materials, and labor resources</CardDescription>
-              </div>
-              <Link href="/resources/new">
-                <Button>Add Resource</Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <DashboardResources extended={true} />
             </CardContent>
           </Card>
         </TabsContent>

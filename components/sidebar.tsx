@@ -12,7 +12,6 @@ import {
   ShoppingCart,
   Users,
   Wallet,
-  Briefcase,
   DollarSign,
   FolderOpen,
   CheckSquare,
@@ -70,11 +69,6 @@ const sidebarItems = [
     title: "Tasks",
     href: "/tasks",
     icon: CheckSquare,
-  },
-  {
-    title: "Resources",
-    href: "/resources",
-    icon: Briefcase,
   },
   {
     title: "Budgets",
@@ -135,7 +129,7 @@ export function Sidebar() {
           <span className="text-lg font-bold">Studio1:1</span>
         </Link>
       </div>
-      <div className="flex flex-col gap-1 p-4 h-[calc(100vh-4rem)] overflow-y-auto">
+      <div className="flex flex-col gap-1 p-4 min-h-screen overflow-y-auto">
         {sidebarItems.map((item) =>
           item.children ? (
             <Collapsible
