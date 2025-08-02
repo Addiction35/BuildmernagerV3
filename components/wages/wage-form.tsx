@@ -15,11 +15,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useProjects } from "@/lib/hooks/projectQueries"
 import axiosInstance from "@/lib/axios"
 import { AutocompleteInput } from "../AutoCompleteItems"
-import { DatePicker } from "@mui/x-date-pickers/DatePicker"
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
-import TextField from "@mui/material/TextField"
-import dayjs from "dayjs"
+
 import { useToast } from "@/hooks/use-toast" // Import useToast
 import { useCreateWage } from "@/lib/hooks/wagesQueries"
 
@@ -146,7 +142,6 @@ export function WagesForm() {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Tabs defaultValue="general" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -411,6 +406,5 @@ export function WagesForm() {
           </Button>
         </div>
       </form>
-    </LocalizationProvider>
   )
 }
