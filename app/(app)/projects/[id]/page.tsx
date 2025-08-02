@@ -65,10 +65,17 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Project Value</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{project?.value ?? "N/A"}</div>
+            <div className="md:text-lg text-xl text-blue-600 font-bold">
+              {project?.value != null
+              ? new Intl.NumberFormat("en-KE", {
+                  style: "currency",
+                  currency: "KES",
+                  minimumFractionDigits: 2,
+                }).format(project.value)
+              : "N/A"}
+            </div>
           </CardContent>
         </Card>
         <Card>

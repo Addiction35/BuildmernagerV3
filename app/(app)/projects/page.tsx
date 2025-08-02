@@ -3,7 +3,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ProjectsTable } from "@/components/projects/projects-table"
-import { ProjectsFilter } from "@/components/projects/projects-filter"
 
 export const metadata: Metadata = {
   title: "Projects | Construction Management",
@@ -28,7 +27,6 @@ export default function ProjectsPage() {
           <CardDescription>View and manage all your construction projects</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectsFilter />
           <ProjectsTable />
         </CardContent>
       </Card>
