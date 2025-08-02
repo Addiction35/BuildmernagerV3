@@ -1,5 +1,3 @@
-// components/projects/projects-table.tsx
-
 "use client"
 
 import { useMemo, useState } from "react"
@@ -18,7 +16,6 @@ import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -44,7 +41,6 @@ import { useProjects, useDeleteProject } from "@/lib/hooks/projectQueries"
 import { toast } from "sonner"
 
 export function ProjectsTable() {
-  const [rowSelection, setRowSelection] = useState({})
   const [globalFilter, setGlobalFilter] = useState("")
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [pagination, setPagination] = useState<PaginationState>({
@@ -66,21 +62,13 @@ export function ProjectsTable() {
   }
 
   const columns = useMemo<ColumnDef<any>[]>(() => [
+    // ✅ Row Number Column
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={val => table.toggleAllPageRowsSelected(!!val)}
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={val => row.toggleSelected(!!val)}
-        />
-      ),
+      id: "number",
+      header: "#",
+      cell: ({ row }) => row.index + 1,
     },
+
     {
       accessorKey: "name",
       header: ({ column }) => <SortableHeader column={column} label="Project" />,
@@ -91,33 +79,48 @@ export function ProjectsTable() {
         </div>
       ),
     },
+
     {
       accessorKey: "client.primaryContact",
       header: "Client",
       cell: ({ row }) => row.original.client?.primaryContact || "-",
     },
+
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
         const status = row.original.status
         const variant =
-          status === "Completed" ? "success" :
-          status === "In Progress" ? "default" :
-          status === "planning" ? "secondary" : "outline"
+          status === "Completed"
+            ? "success"
+            : status === "In Progress"
+            ? "default"
+            : status === "planning"
+            ? "secondary"
+            : "outline"
         return <Badge variant={variant}>{status}</Badge>
       },
       filterFn: (row, id, value) => value === "All" || row.getValue(id) === value,
     },
+
+    // ✅ Value Column with Currency
     {
       accessorKey: "value",
       header: ({ column }) => <SortableHeader column={column} label="Value" />,
+      cell: ({ row }) =>
+        `Ksh ${Number(row.original.value).toLocaleString("en-KE", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
     },
+
     {
       accessorKey: "startDate",
       header: "Start",
       cell: ({ row }) => new Date(row.original.startDate).toLocaleDateString(),
     },
+
     {
       accessorKey: "timeline",
       header: "Timeline",
@@ -130,6 +133,7 @@ export function ProjectsTable() {
         )
       },
     },
+
     {
       id: "actions",
       header: () => <div className="text-right">Actions</div>,
@@ -154,7 +158,10 @@ export function ProjectsTable() {
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDelete(id)} className="text-destructive">
+              <DropdownMenuItem
+                onClick={() => handleDelete(id)}
+                className="text-destructive"
+              >
                 <Trash className="mr-2 h-4 w-4" /> Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -167,13 +174,7 @@ export function ProjectsTable() {
   const table = useReactTable({
     data: projects,
     columns,
-    state: {
-      rowSelection,
-      globalFilter,
-      columnFilters,
-      pagination,
-    },
-    onRowSelectionChange: setRowSelection,
+    state: { globalFilter, columnFilters, pagination },
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
@@ -183,17 +184,8 @@ export function ProjectsTable() {
     getPaginationRowModel: getPaginationRowModel(),
   })
 
-  const setStatusFilter = (status: string) => {
-    table.getColumn("status")?.setFilterValue(status)
-  }
-
-  const sortByNewest = () => {
-    table.setSorting([{ id: "startDate", desc: true }])
-  }
-
-  const sortByAlphabet = () => {
-    table.setSorting([{ id: "name", desc: false }])
-  }
+  const sortByNewest = () => table.setSorting([{ id: "startDate", desc: true }])
+  const sortByAlphabet = () => table.setSorting([{ id: "name", desc: false }])
 
   if (isLoading) return <div>Loading...</div>
   if (!projects.length) return <div>No projects available</div>
@@ -210,6 +202,7 @@ export function ProjectsTable() {
             className="pl-10"
           />
         </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -232,16 +225,20 @@ export function ProjectsTable() {
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className="bg-blue-200 font-bold text-base"
+                  >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
             {table.getRowModel().rows.map(row => (
-              <TableRow key={row.id} className={row.getIsSelected() ? "bg-muted/40" : ""}>
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map(cell => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -289,9 +286,13 @@ function SortableHeader({ column, label }: { column: any; label: string }) {
       onClick={() => column.toggleSorting(sorted === "asc")}
     >
       {label}
-      {sorted === "asc" ? <ChevronUp className="ml-2 h-4 w-4" /> :
-        sorted === "desc" ? <ChevronDown className="ml-2 h-4 w-4" /> :
-          <ChevronsUpDown className="ml-2 h-4 w-4" />}
+      {sorted === "asc" ? (
+        <ChevronUp className="ml-2 h-4 w-4" />
+      ) : sorted === "desc" ? (
+        <ChevronDown className="ml-2 h-4 w-4" />
+      ) : (
+        <ChevronsUpDown className="ml-2 h-4 w-4" />
+      )}
     </Button>
   )
 }
