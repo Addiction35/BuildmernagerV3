@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label"
 import { useProjects } from "@/lib/hooks/projectQueries"
 import { useUsers } from "@/lib/hooks/userQueries"
 import { useCreateTask } from "@/lib/hooks/taskQueries"
+import { Loader2 } from "lucide-react"
 
 // Validation schema
 const taskSchema = z.object({
