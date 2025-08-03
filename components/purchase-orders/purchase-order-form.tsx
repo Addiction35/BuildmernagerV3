@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, Controller, useFieldArray } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,33 +14,32 @@ import { useProjects } from "@/lib/hooks/projectQueries"
 import axiosInstance from "@/lib/axios"
 import { AutocompleteInput } from "../AutoCompleteItems"
 import { useCreatePO } from "@/lib/hooks/purchase-orders"
-import { useToast } from "@/hooks/use-toast" // Import useToast
+import { useToast } from "@/hooks/use-toast"
+import { format } from "date-fns"
 
-const itemSchema = z.object({
-  description: z.string().min(1),
-  quantity: z.coerce.number().min(1),
-  unit: z.string(),
-  unitPrice: z.coerce.number().nonnegative(),
-})
+type Item = {
+  description: string
+  quantity: number
+  unit: string
+  unitPrice: number
+}
 
-const formSchema = z.object({
-  poNumber: z.string().optional(),
-  reference: z.string().optional(),
-  projectId: z.string().min(1),
-  company: z.string().min(1),
-  date: z.date(), // This is the start date, must be a Date object
-  deliveryDate: z.date(), // Must be a Date object
-  deliveryAddress: z.string(),
-  notes: z.string().optional(),
-  vendorName: z.string().min(1),
-  vendorContact: z.string().optional(),
-  vendorEmail: z.string().optional(),
-  vendorPhone: z.string().optional(),
-  vendorAddress: z.string().optional(),
-  items: z.array(itemSchema).min(1),
-})
-
-type FormValues = z.infer<typeof formSchema>
+type FormValues = {
+  poNumber?: string
+  reference?: string
+  projectId: string
+  company: string
+  date: Date | null
+  deliveryDate: Date | null
+  deliveryAddress: string
+  notes?: string
+  vendorName: string
+  vendorContact?: string
+  vendorEmail?: string
+  vendorPhone?: string
+  vendorAddress?: string
+  items: Item[]
+}
 
 export function PurchaseOrderForm() {
   const router = useRouter()
@@ -50,7 +47,7 @@ export function PurchaseOrderForm() {
   const { mutate, isLoading: isCreating } = useCreatePO()
   const [vendorQuery, setVendorQuery] = useState("")
   const [vendorSuggestions, setVendorSuggestions] = useState<any[]>([])
-  const { toast } = useToast() // Initialize useToast
+  const { toast } = useToast()
 
   const {
     control,
@@ -60,14 +57,13 @@ export function PurchaseOrderForm() {
     watch,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       poNumber: "",
       reference: "",
       projectId: "",
-      date: null,
-      deliveryDate: null, 
       company: "",
+      date: null,
+      deliveryDate: null,
       deliveryAddress: "",
       notes: "",
       vendorName: "",
@@ -101,34 +97,27 @@ export function PurchaseOrderForm() {
 
   const fetchVendors = async (query: string) => {
     try {
-      const res = await axiosInstance.get("/vendors/search", {
-        params: { q: query },
-      })
+      const res = await axiosInstance.get("/vendors/search", { params: { q: query } })
       setVendorSuggestions(res.data)
     } catch (err) {
       console.error("Vendor fetch error:", err)
     }
   }
+
   const onSubmit = (data: FormValues) => {
-    console.log("Form data before formatting:", data)
-    // Destructure `poNumber` out of `data` and remove `subtotal`, `tax`, `total` from the payload.
     const { poNumber, ...restOfData } = data
     const payload = {
       ...restOfData,
-      date: restOfData.date.toISOString(),
-      deliveryDate: restOfData.deliveryDate.toISOString(),
+      date: restOfData.date?.toISOString(),
+      deliveryDate: restOfData.deliveryDate?.toISOString(),
       amount: total,
     }
     mutate(payload, {
       onSuccess: () => {
-        toast({
-          title: "Success",
-          description: "Purchase order created successfully.",
-        })
+        toast({ title: "Success", description: "Purchase order created successfully." })
         router.push("/purchase-orders")
       },
-      onError: (err) => {
-        console.error("Create failed:", err)
+      onError: () => {
         toast({
           title: "Error",
           description: "Failed to create purchase order. Please try again.",
@@ -139,257 +128,286 @@ export function PurchaseOrderForm() {
   }
 
   return (
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="vendor">Vendor</TabsTrigger>
-            <TabsTrigger value="items">Items</TabsTrigger>
-          </TabsList>
-          {/* GENERAL TAB */}
-          <TabsContent value="general" className="space-y-6 pt-4">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* PO Number */}
-              <div className="space-y-2">
-                <Label htmlFor="poNumber">PO Number</Label>
-                <Input id="poNumber" placeholder="PO-123(auto Generated)" {...register("poNumber")} disabled />
-                {errors.poNumber && <p className="text-sm text-red-500">{errors.poNumber.message}</p>}
-              </div>
-              {/* Start & Delivery Dates in One Row */}
-              <div className="grid grid-cols-2 gap-4 py-2">
-                {/* Start Date */}
-                <div className="space-y-2">
-                  <Label htmlFor="date">Start Date</Label>
-                  <Controller
-                    name="date"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        id="date"
-                        type="date"
-                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                        onChange={(e) => field.onChange(new Date(e.target.value))}
-                      />
-                    )}
-                  />
-                  {errors.date && (
-                    <p className="text-sm text-red-500">{errors.date.message}</p>
-                  )}
-                </div>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="vendor">Vendor</TabsTrigger>
+          <TabsTrigger value="items">Items</TabsTrigger>
+        </TabsList>
 
-                {/* Delivery Date */}
-                <div className="space-y-2">
-                  <Label htmlFor="deliveryDate">Delivery Date</Label>
-                  <Controller
-                    name="deliveryDate"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        id="deliveryDate"
-                        type="date"
-                        value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
-                        onChange={(e) => field.onChange(new Date(e.target.value))}
-                      />
-                    )}
-                  />
-                  {errors.deliveryDate && (
-                    <p className="text-sm text-red-500">{errors.deliveryDate.message}</p>
-                  )}
-                </div>
-              </div>
-              {/* Reference (optional) */}
+        {/* GENERAL TAB */}
+        <TabsContent value="general" className="space-y-6 pt-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* PO Number */}
+            <div className="space-y-2">
+              <Label htmlFor="poNumber">PO Number</Label>
+              <Input id="poNumber" placeholder="PO-123(auto Generated)" {...register("poNumber")} disabled />
+            </div>
+
+            {/* Start & Delivery Dates */}
+            <div className="grid grid-cols-2 gap-4 py-2">
               <div className="space-y-2">
-                <Label htmlFor="reference">Reference</Label>
-                <Input id="reference" {...register("reference")} />
-              </div>
-              {/* Project Select */}
-              <div className="space-y-2">
-                <Label htmlFor="projectId">Project</Label>
+                <Label htmlFor="date">Start Date</Label>
                 <Controller
+                  name="date"
                   control={control}
-                  name="projectId"
+                  rules={{ required: "Start date is required" }}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="projectId">
-                        <SelectValue placeholder="Select a project" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        {projects?.map((project) => (
-                          <SelectItem key={project._id} value={project._id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                    />
                   )}
                 />
-                {errors.projectId && <p className="text-sm text-red-500">{errors.projectId.message}</p>}
+                {errors.date && <p className="text-sm text-red-500">{errors.date.message}</p>}
               </div>
-              {/* Company Select */}
+
               <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
+                <Label htmlFor="deliveryDate">Delivery Date</Label>
                 <Controller
+                  name="deliveryDate"
                   control={control}
-                  name="company"
+                  rules={{ required: "Delivery date is required" }}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="company">
-                        <SelectValue placeholder="Select company" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white">
-                        <SelectItem value="AcmeCo">Acme Co.</SelectItem>
-                        <SelectItem value="Globex">Globex Corporation</SelectItem>
-                        <SelectItem value="Soylent">Soylent Ltd.</SelectItem>
-                        <SelectItem value="Initech">Initech</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="deliveryDate"
+                      type="date"
+                      value={field.value ? format(field.value, "yyyy-MM-dd") : ""}
+                      onChange={(e) => field.onChange(new Date(e.target.value))}
+                    />
                   )}
                 />
-              </div>
-              {/* Delivery Address */}
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="deliveryAddress">Delivery Address</Label>
-                <Textarea id="deliveryAddress" {...register("deliveryAddress")} />
-              </div>
-              {/* Notes */}
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea id="notes" {...register("notes")} />
+                {errors.deliveryDate && <p className="text-sm text-red-500">{errors.deliveryDate.message}</p>}
               </div>
             </div>
-          </TabsContent>
-          {/* VENDOR TAB */}
-          <TabsContent value="vendor" className="space-y-4 pt-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2 relative">
-                <Label>Vendor Name</Label>
-                <Input
-                  {...register("vendorName")}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    setValue("vendorName", val)
-                    setVendorQuery(val)
-                  }}
-                />
-                {vendorSuggestions.length > 0 && (
-                  <ul className="absolute z-20 w-full bg-white border rounded mt-1 max-h-60 overflow-y-auto shadow">
-                    {vendorSuggestions.map((vendor) => (
-                      <li
-                        key={vendor._id}
-                        className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
-                        onClick={() => {
-                          setValue("vendorName", vendor.companyName)
-                          setValue("vendorContact", vendor.contactPerson)
-                          setValue("vendorEmail", vendor.email)
-                          setValue("vendorPhone", vendor.phone)
-                          setValue("vendorAddress", vendor.address)
-                          setVendorSuggestions([])
-                        }}
-                      >
-                        {vendor.companyName} — {vendor.contactPerson}
-                      </li>
-                    ))}
-                  </ul>
+
+            {/* Reference */}
+            <div className="space-y-2">
+              <Label htmlFor="reference">Reference</Label>
+              <Input id="reference" {...register("reference")} />
+            </div>
+
+            {/* Project */}
+            <div className="space-y-2">
+              <Label htmlFor="projectId">Project</Label>
+              <Controller
+                name="projectId"
+                control={control}
+                rules={{ required: "Project is required" }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a project" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {projects?.map((p) => (
+                        <SelectItem key={p._id} value={p._id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
-              </div>
-              <div className="space-y-2">
-                <Label>Contact Person</Label>
-                <Input {...register("vendorContact")} />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" {...register("vendorEmail")} />
-              </div>
-              <div className="space-y-2">
-                <Label>Phone</Label>
-                <Input {...register("vendorPhone")} />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label>Address</Label>
-                <Textarea {...register("vendorAddress")} />
-              </div>
+              />
+              {errors.projectId && <p className="text-sm text-red-500">{errors.projectId.message}</p>}
             </div>
-          </TabsContent>
-          {/* ITEMS TAB */}
-          <TabsContent value="items" className="space-y-4 pt-4">
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                <div className="grid grid-cols-12 gap-4 font-medium">
-                  <div className="col-span-5 min-w-0">Description</div>
-                  <div className="col-span-2 text-center min-w-0">Quantity</div>
-                  <div className="col-span-2 min-w-0">Unit</div>
-                  <div className="col-span-2 text-right min-w-0">Unit Price</div>
-                  <div className="col-span-1" />
-                </div>
-                {fields.map((item, index) => (
-                  <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                    <div className="col-span-5 min-w-0">
-                      <Controller
-                        control={control}
-                        name={`items.${index}.description`}
-                        render={({ field }) => (
-                          <AutocompleteInput
-                            value={field.value}
-                            onChange={field.onChange}
-                            onSelect={(selectedItem) => {
-                              setValue(`items.${index}.description`, selectedItem.description)
-                              setValue(`items.${index}.unit`, selectedItem.unit)
-                              setValue(`items.${index}.unitPrice`, selectedItem.unitPrice)
-                            }}
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="col-span-2 min-w-0">
-                      <Input type="number" {...register(`items.${index}.quantity`)} />
-                    </div>
-                    <div className="col-span-2 min-w-0">
-                      <Input {...register(`items.${index}.unit`)} />
-                    </div>
-                    <div className="col-span-2 min-w-0">
-                      <Input type="number" step="0.01" {...register(`items.${index}.unitPrice`)} />
-                    </div>
-                    <div className="col-span-1 flex justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => remove(index)}
-                        disabled={fields.length === 1}
-                      >
-                        ×
-                      </Button>
-                    </div>
+
+            {/* Company */}
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <Controller
+                name="company"
+                control={control}
+                rules={{ required: "Company is required" }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select company" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="AcmeCo">Acme Co.</SelectItem>
+                      <SelectItem value="Globex">Globex Corporation</SelectItem>
+                      <SelectItem value="Soylent">Soylent Ltd.</SelectItem>
+                      <SelectItem value="Initech">Initech</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.company && <p className="text-sm text-red-500">{errors.company.message}</p>}
+            </div>
+
+            {/* Delivery Address */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="deliveryAddress">Delivery Address</Label>
+              <Textarea id="deliveryAddress" {...register("deliveryAddress", { required: "Address is required" })} />
+              {errors.deliveryAddress && <p className="text-sm text-red-500">{errors.deliveryAddress.message}</p>}
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" {...register("notes")} />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* VENDOR TAB */}
+        <TabsContent value="vendor" className="space-y-4 pt-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2 relative">
+              <Label>Vendor Name</Label>
+              <Input
+                {...register("vendorName", { required: "Vendor name is required" })}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setValue("vendorName", val)
+                  setVendorQuery(val)
+                }}
+              />
+              {errors.vendorName && <p className="text-sm text-red-500">{errors.vendorName.message}</p>}
+              {vendorSuggestions.length > 0 && (
+                <ul className="absolute z-20 w-full bg-white border rounded mt-1 max-h-60 overflow-y-auto shadow">
+                  {vendorSuggestions.map((vendor) => (
+                    <li
+                      key={vendor._id}
+                      className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+                      onClick={() => {
+                        setValue("vendorName", vendor.companyName)
+                        setValue("vendorContact", vendor.contactPerson)
+                        setValue("vendorEmail", vendor.email)
+                        setValue("vendorPhone", vendor.phone)
+                        setValue("vendorAddress", vendor.address)
+                        setVendorSuggestions([])
+                      }}
+                    >
+                      {vendor.companyName} — {vendor.contactPerson}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Contact Person</Label>
+              <Input {...register("vendorContact")} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" {...register("vendorEmail")} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input {...register("vendorPhone")} />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label>Address</Label>
+              <Textarea {...register("vendorAddress")} />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ITEMS TAB */}
+        <TabsContent value="items" className="space-y-4 pt-4">
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <div className="grid grid-cols-12 gap-4 font-medium">
+                <div className="col-span-5">Description</div>
+                <div className="col-span-2 text-center">Quantity</div>
+                <div className="col-span-2">Unit</div>
+                <div className="col-span-2 text-right">Unit Price</div>
+                <div className="col-span-1" />
+              </div>
+
+              {fields.map((item, index) => (
+                <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
+                  <div className="col-span-5">
+                    <Controller
+                      control={control}
+                      name={`items.${index}.description`}
+                      rules={{ required: "Description is required" }}
+                      render={({ field }) => (
+                        <AutocompleteInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          onSelect={(selected) => {
+                            setValue(`items.${index}.description`, selected.description)
+                            setValue(`items.${index}.unit`, selected.unit)
+                            setValue(`items.${index}.unitPrice`, selected.unitPrice)
+                          }}
+                        />
+                      )}
+                    />
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => append({ description: "", quantity: 1, unit: "", unitPrice: 0 })}
-                >
-                  Add Item
-                </Button>
-              </CardContent>
-            </Card>
-            <div className="flex justify-end">
-              <div className="w-full max-w-sm space-y-2">
-                <div className="border-t pt-2 mt-2 flex justify-between font-medium">
-                  <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+
+                  <div className="col-span-2">
+                    <Input
+                      type="number"
+                      {...register(`items.${index}.quantity`, { required: true, min: 1, valueAsNumber: true })}
+                    />
+                  </div>
+
+                  <div className="col-span-2">
+                    <Input {...register(`items.${index}.unit`, { required: true })} />
+                  </div>
+
+                  <div className="col-span-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      {...register(`items.${index}.unitPrice`, { required: true, valueAsNumber: true })}
+                    />
+                  </div>
+
+                  <div className="col-span-1 flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => remove(index)}
+                      disabled={fields.length === 1}
+                    >
+                      ×
+                    </Button>
+                  </div>
                 </div>
+              ))}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => append({ description: "", quantity: 1, unit: "", unitPrice: 0 })}
+              >
+                Add Item
+              </Button>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
+            <div className="w-full max-w-sm space-y-2">
+              <div className="border-t pt-2 mt-2 flex justify-between font-medium">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
-        <div className="mt-6 flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => router.push("/purchase-orders")}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? "Creating..." : "Create Purchase Order"}
-          </Button>
-        </div>
-      </form>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <div className="mt-6 flex justify-end gap-4">
+        <Button type="button" variant="outline" onClick={() => router.push("/purchase-orders")}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isCreating}>
+          {isCreating ? "Creating..." : "Create Purchase Order"}
+        </Button>
+      </div>
+    </form>
   )
 }
