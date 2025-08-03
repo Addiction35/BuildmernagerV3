@@ -45,6 +45,15 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
   if (error) return <div className="text-center py-10 text-red-500">Error loading purchase order</div>
   if (!purchaseOrder) return notFound()
 
+//    Calculate subtotal from all items
+const subtotal = purchaseOrder.items?.reduce((acc, item) => {
+  const amount =
+    typeof item.amount === "number"
+      ? item.amount
+      : (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+  return acc + amount;
+}, 0) || 0;
+
   return (
     <div ref={printRef} className="flex flex-col gap-8 p-2 bg-white">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between print:hidden">
@@ -151,7 +160,6 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
                     : "Unknown Date",
                   "Delivery Address": purchaseOrder.deliveryAddress,
                   Status: purchaseOrder.status,
-                  "Billing Status": purchaseOrder.billed ? "Billed" : "Unbilled",
                   Company: purchaseOrder.company,
                 }).map(([key, value]) => (
                   <div key={key} className="flex justify-between border-b pb-1">
@@ -183,17 +191,31 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
                 <tbody>
                   {purchaseOrder.items?.length > 0 ? (
                     purchaseOrder.items.map((item, index) => (
-                      <tr key={index} className="border-b hover:bg-gray-50">
-                        <td className="p-3">{item.description || "-"}</td>
-                        <td className="p-3 text-center">{item.quantity ?? 0}</td>
-                        <td className="p-3 text-center">{item.unit || "-"}</td>
-                        <td className="p-3 text-right">
-                          ${item.unitPrice?.toFixed(2) ?? "0.00"}
-                        </td>
-                        <td className="p-3 text-right">
-                          ${item.amount?.toFixed(2) ?? "0.00"}
-                        </td>
-                      </tr>
+                    <tr key={index} className="border-b hover:bg-gray-50">
+                      <td className="p-3">{item.description || "-"}</td>
+                      <td className="p-3 text-center">{item.quantity ?? 0}</td>
+                      <td className="p-3 text-center">{item.unit || "-"}</td>
+                      <td className="p-3 text-right">
+                        {new Intl.NumberFormat("en-KE", {
+                          style: "currency",
+                          currency: "KES",
+                        }).format(item.unitPrice ?? 0)}
+                      </td>
+                      <td className="p-3 text-right">
+                        {(() => {
+                          const amount =
+                            typeof item.amount === "number"
+                              ? item.amount
+                              : (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+
+                          return new Intl.NumberFormat("en-KE", {
+                            style: "currency",
+                            currency: "KES",
+                          }).format(amount);
+                        })()}
+                      </td>
+                    </tr>
+
                     ))
                   ) : (
                     <tr>
@@ -203,23 +225,35 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
                     </tr>
                   )}
                 </tbody>
-                <tfoot>
-                  {Object.entries({
-                    Subtotal: purchaseOrder.subtotal,
-                    Tax: purchaseOrder.tax,
-                    Shipping: purchaseOrder.shipping,
-                    Total: purchaseOrder.total,
-                  }).map(([key, value]) => (
-                    <tr key={key} className="border-t font-medium">
-                      <td colSpan={4} className="p-3 text-right">
-                        {key}
-                      </td>
-                      <td className="p-3 text-right">
-                        ${value?.toFixed(2) ?? "0.00"}
-                      </td>
-                    </tr>
-                  ))}
-                </tfoot>
+              <tfoot>
+                <tr className="border-t font-medium">
+                  <td colSpan={4} className="p-3 text-right">Subtotal</td>
+                  <td className="p-3 text-right">
+                    {new Intl.NumberFormat("en-KE", {
+                      style: "currency",
+                      currency: "KES",
+                    }).format(subtotal)}
+                  </td>
+                </tr>
+                <tr className="border-t font-medium">
+                  <td colSpan={4} className="p-3 text-right">Tax</td>
+                  <td className="p-3 text-right">
+                    {new Intl.NumberFormat("en-KE", {
+                      style: "currency",
+                      currency: "KES",
+                    }).format(purchaseOrder.tax ?? 0)}
+                  </td>
+                </tr>
+                <tr className="border-t font-bold">
+                  <td colSpan={4} className="p-3 text-right">Total</td>
+                  <td className="p-3 text-right">
+                    {new Intl.NumberFormat("en-KE", {
+                      style: "currency",
+                      currency: "KES",
+                    }).format(purchaseOrder.amount ?? 0)}
+                  </td>
+                </tr>
+              </tfoot>
               </table>
             </div>
           </CardContent>

@@ -160,7 +160,6 @@ const subtotal = purchaseOrder.items?.reduce((acc, item) => {
                     : "Unknown Date",
                   "Delivery Address": purchaseOrder.deliveryAddress,
                   Status: purchaseOrder.status,
-                  "Billing Status": purchaseOrder.billed ? "Billed" : "Unbilled",
                   Company: purchaseOrder.company,
                 }).map(([key, value]) => (
                   <div key={key} className="flex justify-between border-b pb-1">
@@ -192,23 +191,30 @@ const subtotal = purchaseOrder.items?.reduce((acc, item) => {
                 <tbody>
                   {purchaseOrder.items?.length > 0 ? (
                     purchaseOrder.items.map((item, index) => (
-                      <tr key={index} className="border-b hover:bg-gray-50">
-                        <td className="p-3">{item.description || "-"}</td>
-                        <td className="p-3 text-center">{item.quantity ?? 0}</td>
-                        <td className="p-3 text-center">{item.unit || "-"}</td>
-                        <td className="p-3 text-right">
-                          {item.unitPrice?.toFixed(2) ?? "0.00"}
-                        </td>
-                        <td className="p-3 text-right">
-                          {(() => {
-                            const amount =
-                              typeof item.amount === "number"
-                                ? item.amount
-                                : (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
-                            return `${amount.toFixed(2)}`;
-                          })()}
-                        </td>
-                      </tr>
+                    <tr key={index} className="border-b hover:bg-gray-50">
+                      <td className="p-3">{item.description || "-"}</td>
+                      <td className="p-3 text-center">{item.quantity ?? 0}</td>
+                      <td className="p-3 text-center">{item.unit || "-"}</td>
+                      <td className="p-3 text-right">
+                        {new Intl.NumberFormat("en-KE", {
+                          style: "currency",
+                          currency: "KES",
+                        }).format(item.unitPrice ?? 0)}
+                      </td>
+                      <td className="p-3 text-right">
+                        {(() => {
+                          const amount =
+                            typeof item.amount === "number"
+                              ? item.amount
+                              : (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+
+                          return new Intl.NumberFormat("en-KE", {
+                            style: "currency",
+                            currency: "KES",
+                          }).format(amount);
+                        })()}
+                      </td>
+                    </tr>
                     ))
                   ) : (
                     <tr>
@@ -218,20 +224,35 @@ const subtotal = purchaseOrder.items?.reduce((acc, item) => {
                     </tr>
                   )}
                 </tbody>
-                <tfoot>
-                  <tr className="border-t font-medium">
-                    <td colSpan={4} className="p-3 text-right">Subtotal</td>
-                    <td className="p-3 text-right">{subtotal.toFixed(2)}</td>
-                  </tr>
-                  <tr className="border-t font-medium">
-                    <td colSpan={4} className="p-3 text-right">Tax</td>
-                    <td className="p-3 text-right">{purchaseOrder.tax?.toFixed(2) ?? "0.00"}</td>
-                  </tr>
-                  <tr className="border-t font-bold">
-                    <td colSpan={4} className="p-3 text-right">Total</td>
-                    <td className="p-3 text-right">{purchaseOrder.amount?.toFixed(2) ?? "0.00"}</td>
-                  </tr>
-                </tfoot>
+              <tfoot>
+                <tr className="border-t font-medium">
+                  <td colSpan={4} className="p-3 text-right">Subtotal</td>
+                  <td className="p-3 text-right">
+                    {new Intl.NumberFormat("en-KE", {
+                      style: "currency",
+                      currency: "KES",
+                    }).format(subtotal)}
+                  </td>
+                </tr>
+                <tr className="border-t font-medium">
+                  <td colSpan={4} className="p-3 text-right">Tax</td>
+                  <td className="p-3 text-right">
+                    {new Intl.NumberFormat("en-KE", {
+                      style: "currency",
+                      currency: "KES",
+                    }).format(purchaseOrder.tax ?? 0)}
+                  </td>
+                </tr>
+                <tr className="border-t font-bold">
+                  <td colSpan={4} className="p-3 text-right">Total</td>
+                  <td className="p-3 text-right">
+                    {new Intl.NumberFormat("en-KE", {
+                      style: "currency",
+                      currency: "KES",
+                    }).format(purchaseOrder.amount ?? 0)}
+                  </td>
+                </tr>
+              </tfoot>
               </table>
             </div>
           </CardContent>
