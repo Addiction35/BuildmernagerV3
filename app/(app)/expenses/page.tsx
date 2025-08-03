@@ -28,7 +28,6 @@ export default function ExpensesPage() {
           <CardDescription>View and manage all your construction expenses</CardDescription>
         </CardHeader>
         <CardContent>
-          <ExpensesFilter />
           <ExpensesTable />
         </CardContent>
       </Card>
