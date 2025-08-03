@@ -28,7 +28,6 @@ export default function PurchaseOrdersPage() {
           <CardDescription>View and manage all your construction purchase orders</CardDescription>
         </CardHeader>
         <CardContent>
-          <PurchaseOrdersFilter />
           <PurchaseOrdersTable />
         </CardContent>
       </Card>

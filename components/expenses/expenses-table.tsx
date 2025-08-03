@@ -8,6 +8,7 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
@@ -38,14 +39,13 @@ import {
 } from "@/components/ui/select"
 import { Search, Eye, Edit, Receipt, Trash, MoreHorizontal } from "lucide-react"
 
-export  function ExpensesTable() {
+export function ExpensesTable() {
   const { data: expenses = [], isLoading } = useExpenses()
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [sort, setSort] = useState("newest")
 
-  // ✅ Filtering + Sorting Logic
   const filteredExpenses = useMemo(() => {
     let filtered = [...expenses]
 
@@ -82,7 +82,6 @@ export  function ExpensesTable() {
     return filtered
   }, [expenses, search, statusFilter, sort])
 
-  // ✅ Define Table Columns (with row numbering)
   const columns: ColumnDef<any>[] = [
     {
       header: "#",
@@ -111,13 +110,16 @@ export  function ExpensesTable() {
     {
       accessorKey: "deliveryDate",
       header: "Delivery Date",
-      cell: ({ row }) => new Date(row.original.deliveryDate).toLocaleDateString(),
+      cell: ({ row }) =>
+        new Date(row.original.deliveryDate).toLocaleDateString(),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <Badge variant={row.original.status === "Paid" ? "success" : "secondary"}>
+        <Badge
+          variant={row.original.status === "Paid" ? "success" : "secondary"}
+        >
           {row.original.status}
         </Badge>
       ),
@@ -186,12 +188,13 @@ export  function ExpensesTable() {
     },
   ]
 
-  // ✅ Create Table Instance
   const table = useReactTable({
     data: filteredExpenses,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageIndex: 0, pageSize: 5 } },
   })
 
   if (isLoading) {
@@ -244,7 +247,6 @@ export  function ExpensesTable() {
           <Button variant="outline">Filter</Button>
         </div>
       </div>
-
       {/* 📄 Table */}
       <div className="rounded-md border">
         <Table>
@@ -252,7 +254,10 @@ export  function ExpensesTable() {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="bg-blue-300 font-bold text-black">
+                  <TableHead
+                    key={header.id}
+                    className="bg-blue-300 font-bold text-black"
+                  >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -273,13 +278,75 @@ export  function ExpensesTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-4 text-gray-500">
+                <TableCell
+                  colSpan={columns.length}
+                  className="text-center py-4 text-gray-500"
+                >
                   No expenses found
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* ✅ Pagination Controls */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 py-4">
+        {/* 🔽 Page Size Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Rows per page:</span>
+          <Select
+            value={String(table.getState().pagination.pageSize)}
+            onValueChange={(value) => table.setPageSize(Number(value))}
+          >
+            <SelectTrigger className="w-[80px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {[5, 10, 20, 50].map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* 🔢 Numbered Pagination */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+
+          {Array.from({ length: table.getPageCount() }, (_, i) => (
+            <Button
+              key={i}
+              size="sm"
+              variant={
+                table.getState().pagination.pageIndex === i
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() => table.setPageIndex(i)}
+            >
+              {i + 1}
+            </Button>
+          ))}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   )

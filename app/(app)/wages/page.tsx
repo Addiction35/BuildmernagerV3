@@ -28,7 +28,6 @@ export default function WagesPage() {
           <CardDescription>View and manage all your wage payments</CardDescription>
         </CardHeader>
         <CardContent>
-          <WagesFilter />
           <WagesTable />
         </CardContent>
       </Card>
