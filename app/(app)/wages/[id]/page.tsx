@@ -32,11 +32,11 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
   })
 
   const statusColors: Record<string, string> = {
-    Approved: "bg-green-100 text-green-800",
-    Delivered: "bg-green-100 text-green-800",
-    Pending: "bg-yellow-100 text-yellow-800",
-    Rejected: "bg-red-100 text-red-800",
-    Cancelled: "bg-gray-100 text-gray-600",
+    approved: "bg-green-100 text-green-800",
+    delivered: "bg-green-100 text-green-800",
+    pending: "bg-yellow-100 text-yellow-800",
+    rejected: "bg-red-100 text-red-800",
+    cancelled: "bg-gray-100 text-gray-600",
     "In Transit": "bg-blue-100 text-blue-800",
     default: "bg-gray-100 text-gray-800",
   }
@@ -68,7 +68,7 @@ const subtotal = purchaseOrder.items?.reduce((acc, item) => {
             Wage Order {purchaseOrder.wageNumber || "N/A"}
           </h1>
           <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
+            className={`px-2 py-3 rounded-md text-sm font-bold ${
               statusColors[purchaseOrder.status] || statusColors.default
             }`}
           >
