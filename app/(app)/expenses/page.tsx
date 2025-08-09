@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ExpensesTable } from "@/components/expenses/expenses-table"
-import { ExpensesFilter } from "@/components/expenses/expenses-filter"
+
 
 export const metadata: Metadata = {
   title: "Expenses | Construction Management",

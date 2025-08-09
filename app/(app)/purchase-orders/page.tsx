@@ -3,7 +3,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PurchaseOrdersTable } from "@/components/purchase-orders/purchase-orders-table"
-import { PurchaseOrdersFilter } from "@/components/purchase-orders/purchase-orders-filter"
 
 export const metadata: Metadata = {
   title: "Purchase Orders | Construction Management",

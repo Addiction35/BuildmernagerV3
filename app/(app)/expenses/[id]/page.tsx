@@ -54,6 +54,8 @@ const subtotal = purchaseOrder.items?.reduce((acc, item) => {
   return acc + amount;
 }, 0) || 0;
 
+const tax = subtotal * 0.1; // Assuming a 10% tax rate
+
   return (
     <div ref={printRef} className="flex flex-col gap-8 p-2 bg-white">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between print:hidden">
@@ -241,7 +243,7 @@ const subtotal = purchaseOrder.items?.reduce((acc, item) => {
                     {new Intl.NumberFormat("en-KE", {
                       style: "currency",
                       currency: "KES",
-                    }).format(purchaseOrder.tax ?? 0)}
+                    }).format(tax ?? 0)}
                   </td>
                 </tr>
                 <tr className="border-t font-bold">
