@@ -14,7 +14,7 @@ import {
   Wallet,
   DollarSign,
   FolderOpen,
-  CheckSquare,
+
   UserCircle,
   Building,
   Shield,
@@ -66,11 +66,6 @@ const sidebarItems = [
     icon: Users,
   },
   {
-    title: "Tasks",
-    href: "/tasks",
-    icon: CheckSquare,
-  },
-  {
     title: "Budgets",
     href: "/budgets",
     icon: DollarSign,
@@ -101,15 +96,10 @@ const sidebarItems = [
       },
       {
         title: "Settings",
-        href: "/admin/settings",
+        href: "/settings",
         icon: Settings,
       },
     ],
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
   },
 ]
 

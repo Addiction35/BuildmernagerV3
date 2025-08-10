@@ -32,7 +32,6 @@ export function AdminDashboard() {
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="financials">Financials</TabsTrigger>
           <TabsTrigger value="operations">Operations</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
@@ -58,24 +57,7 @@ export function AdminDashboard() {
             <DashboardPieChart />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div className="space-y-1">
-                  <CardTitle>Upcoming Tasks</CardTitle>
-                  <CardDescription>Tasks due in the next 7 days</CardDescription>
-                </div>
-                <Link href="/tasks">
-                  <Button variant="ghost" size="sm">
-                    View All
-                  </Button>
-                </Link>
-              </CardHeader>
-              <CardContent>
-                <DashboardTasks limit={5} />
-              </CardContent>
-            </Card>
-
+          <div className="flex gap-4 w-full p-2 flex-col">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="space-y-1">
@@ -197,24 +179,6 @@ export function AdminDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="tasks" className="pt-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div className="space-y-1">
-                <CardTitle>Task Management</CardTitle>
-                <CardDescription>All tasks across your projects</CardDescription>
-              </div>
-              <Link href="/tasks/new">
-                <Button>New Task</Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <DashboardTasks extended={true} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="documents" className="pt-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -231,7 +195,6 @@ export function AdminDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="reports" className="pt-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 
 export default function ReportsPage() {
   const [filters, setFilters] = useState({
@@ -22,7 +22,7 @@ export default function ReportsPage() {
       for (const key in filters) {
         if (filters[key]) params[key] = filters[key];
       }
-      const res = await axios.get('/api/universal-search', { params });
+      const res = await axiosInstance.get('/search', { params });
       return res.data.data;
     },
     enabled: false, // fetch only when user clicks search
@@ -118,7 +118,7 @@ export default function ReportsPage() {
               {projectBlock.project.name} ({projectBlock.project._id})
             </h2>
             <p>
-              Client: {projectBlock.project.client?.name || 'N/A'} | Company: {projectBlock.project.company || 'N/A'}
+              Client: {projectBlock.project.client?.primaryContact || 'N/A'} | Company: {projectBlock.project.company || 'N/A'}
             </p>
 
             {/* Estimates */}
@@ -138,17 +138,26 @@ export default function ReportsPage() {
                       <table className="w-full text-sm border">
                         <thead>
                           <tr className="bg-gray-100">
-                            <th className="border p-1">Vendor</th>
-                            <th className="border p-1">Amount</th>
+                            <th className="border p-1">Expense Number</th>
                             <th className="border p-1">Date</th>
+                            <th className="border p-1">Vendor</th>
+                            
+                            <th className="border p-1">Reference</th>
+                            <th className="border p-1">Company</th>
+                            <th className="border p-1">Amount</th>
+
                           </tr>
                         </thead>
                         <tbody>
                           {projectBlock.expenses.map((exp) => (
                             <tr key={exp._id}>
-                              <td className="border p-1">{exp.vendorName}</td>
-                              <td className="border p-1">{exp.amount}</td>
+                              <td className="border p-1">{exp.expenseNumber}</td>
                               <td className="border p-1">{exp.date}</td>
+                              <td className="border p-1">{exp.vendorName}</td>
+                              <td className="border p-1">{exp.reference}</td>
+                              <td className="border p-1">{exp.company}</td>
+                              <td className="border p-1">{exp.amount}</td>
+
                             </tr>
                           ))}
                         </tbody>
@@ -163,17 +172,25 @@ export default function ReportsPage() {
                       <table className="w-full text-sm border">
                         <thead>
                           <tr className="bg-gray-100">
-                            <th className="border p-1">Employee</th>
-                            <th className="border p-1">Amount</th>
+                            <th className="border p-1">Wage Number</th>
                             <th className="border p-1">Date</th>
+                            <th className="border p-1">Vendor</th>
+                            
+                            <th className="border p-1">Reference</th>
+                            <th className="border p-1">Company</th>
+                            <th className="border p-1">Amount</th>
                           </tr>
                         </thead>
                         <tbody>
                           {projectBlock.wages.map((w) => (
                             <tr key={w._id}>
-                              <td className="border p-1">{w.employeeName}</td>
-                              <td className="border p-1">{w.amount}</td>
+                              <td className="border p-1">{w.wageNumber}</td>
                               <td className="border p-1">{w.date}</td>
+                              <td className="border p-1">{w.vendorName}</td>
+                              <td className="border p-1">{w.reference}</td>
+                              <td className="border p-1">{w.company}</td>
+                              <td className="border p-1">{w.amount}</td>
+                              
                             </tr>
                           ))}
                         </tbody>
@@ -188,17 +205,25 @@ export default function ReportsPage() {
                       <table className="w-full text-sm border">
                         <thead>
                           <tr className="bg-gray-100">
-                            <th className="border p-1">Vendor</th>
-                            <th className="border p-1">Amount</th>
+                            <th className="border p-1">PO Number</th>
                             <th className="border p-1">Date</th>
+                            <th className="border p-1">Vendor</th>
+                            
+                            <th className="border p-1">Reference</th>
+                            <th className="border p-1">Company</th>
+                            <th className="border p-1">Amount</th>
                           </tr>
                         </thead>
                         <tbody>
                           {projectBlock.purchaseOrders.map((po) => (
                             <tr key={po._id}>
-                              <td className="border p-1">{po.vendorName}</td>
-                              <td className="border p-1">{po.amount}</td>
+                              <td className="border p-1">{po.poNumber}</td>
                               <td className="border p-1">{po.date}</td>
+                              <td className="border p-1">{po.vendorName}</td>
+                              <td className="border p-1">{po.reference}</td>
+                              <td className="border p-1">{po.company}</td>
+                              <td className="border p-1">{po.amount}</td>
+                              
                             </tr>
                           ))}
                         </tbody>
