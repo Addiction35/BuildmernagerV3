@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import axiosInstance from "@/lib/axios";
+import Cookies from "js-cookie";
 
 interface User {
   userId: string;
@@ -30,8 +31,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = !!user;
 
   const login = (userData: User, token: string) => {
+    // Save in localStorage for client state
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token); // ✅ Save JWT token
+    localStorage.setItem("token", token);
+
+    // Save token in cookies for middleware
+    Cookies.set("token", token, { expires: 7 }); // 7 days expiry
+
+    // Set default Authorization header for axios
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
     setUser(userData);
   };
 
@@ -41,8 +50,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err) {
       console.error("❌ Logout failed:", err);
     }
+
+    // Remove from both localStorage and cookies
     localStorage.removeItem("user");
-    localStorage.removeItem("token"); // ✅ Remove token
+    localStorage.removeItem("token");
+    Cookies.remove("token");
+
+    delete axiosInstance.defaults.headers.common["Authorization"];
     setUser(null);
   };
 
@@ -52,13 +66,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (storedUser && token) {
       try {
-        const decoded: any = jwtDecode(token); // Optional: validate expiry or extract info
+        const decoded: any = jwtDecode(token);
         console.log("✅ Token decoded:", decoded);
+
         setUser(JSON.parse(storedUser));
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        // Ensure cookies are in sync for middleware
+        if (!Cookies.get("token")) {
+          Cookies.set("token", token, { expires: 7 });
+        }
       } catch (err) {
         console.error("❌ Invalid token:", err);
         localStorage.removeItem("user");
         localStorage.removeItem("token");
+        Cookies.remove("token");
       }
     }
 
