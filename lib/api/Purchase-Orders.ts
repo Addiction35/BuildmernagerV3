@@ -1,27 +1,63 @@
-// lib/queries/projectQueries.js
 import axiosInstance from '../axios';
 
+// ====== Fetch All Purchase Orders ======
 export const fetchPOs = async () => {
   const { data } = await axiosInstance.get('/purchase-orders');
   return data;
 };
 
+// ====== Fetch Purchase Order by ID ======
 export const fetchPOById = async (id) => {
   const { data } = await axiosInstance.get(`/purchase-orders/${id}`);
   return data;
 };
 
+// ====== Create Purchase Order ======
 export const createPO = async (Pdata) => {
   const { data } = await axiosInstance.post('/purchase-orders', Pdata);
   return data;
 };
 
+// Approve PO
+export const approvePO = async (id) => {
+  const { data } = await axiosInstance.patch(`/purchase-orders/${id}/approve`);
+  return data;
+};
+
+// Reject PO
+export const rejectPO = async (id) => {
+  const { data } = await axiosInstance.patch(`/purchase-orders/${id}/reject`);
+  return data;
+};
+
+// ====== Update Purchase Order ======
 export const updatePO = async ({ id, updates }) => {
   const { data } = await axiosInstance.put(`/purchase-orders/${id}`, updates);
   return data;
 };
 
-export const deletePO = async (id) => {
-  const { data } = await axiosInstance.delete(`/projects/${id}`);
-  return data;
+// ====== Soft Delete Purchase Order ======
+export const softDeletePO = async (id) => {
+  try {
+    const { data } = await axiosInstance.patch(`/purchase-orders/${id}`);
+    return { success: true, message: data.message };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error.response?.data?.message || 'Soft delete failed' 
+    };
+  }
+};
+
+// ====== Permanent Delete Purchase Order ======
+export const permanentDeletePO = async (id) => {
+  try {
+    const { data } = await axiosInstance.delete(`/purchase-orders/${id}`);
+    return { success: true, message: data.message };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error.response?.data?.message || 'Delete failed' 
+    };
+  }
 };

@@ -37,20 +37,35 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { Search, Eye, Edit, Receipt, Trash, MoreHorizontal } from "lucide-react"
-import { useDeletePO, usePurchases } from "@/lib/hooks/purchase-orders"
+import { Search, Eye, Edit,  Trash, MoreHorizontal } from "lucide-react"
+import {  usePurchases } from "@/lib/hooks/purchase-orders"
+import { approvePO, rejectPO, softDeletePO } from "@/lib/api/Purchase-Orders"
 
 export function PurchaseOrdersTable() {
   const queryClient = useQueryClient()
   const { data: purchaseOrders = [], isLoading } = usePurchases()
-  const deletePO = useDeletePO()
+
 
   const { mutate: deleteOrder, isLoading: isDeleting } = useMutation({
-    mutationFn: deletePO,
+    mutationFn: softDeletePO,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
     },
   })
+
+const { mutate: approveOrder } = useMutation({
+  mutationFn: approvePO,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
+  },
+})
+
+const { mutate: rejectOrder } = useMutation({
+  mutationFn: rejectPO,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
+  },
+})
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -139,59 +154,68 @@ export function PurchaseOrdersTable() {
           maximumFractionDigits: 2,
         }).format(row.original.amount || 0),
     },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const order = row.original
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white" align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link href={`/purchase-orders/${order._id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  View Details
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/purchase-orders/${order._id}/edit`}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit PO
-                </Link>
-              </DropdownMenuItem>
-              {!order.billed && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/bills/new?from=${order._id}`}>
-                      <Receipt className="mr-2 h-4 w-4" />
-                      Create Bill
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => deleteOrder(order._id)}
-                disabled={isDeleting}
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                {isDeleting ? "Deleting..." : "Delete Purchase Order"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      },
-    },
-  ]
+{
+  id: "actions",
+  header: "Actions",
+  cell: ({ row }) => {
+    const order = row.original
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="bg-white" align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem asChild>
+            <Link href={`/purchase-orders/${order._id}`}>
+              <Eye className="mr-2 h-4 w-4" />
+              View Details
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/purchase-orders/${order._id}/edit`}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit PO
+            </Link>
+          </DropdownMenuItem>
 
+          <DropdownMenuSeparator />
+
+          {/* ✅ Approve */}
+          <DropdownMenuItem
+            onClick={() => approveOrder(order._id)}
+            disabled={order.status === "Approved"}
+          >
+            ✅ Approve
+          </DropdownMenuItem>
+
+          {/* ❌ Reject */}
+          <DropdownMenuItem
+            onClick={() => rejectOrder(order._id)}
+            disabled={order.status === "Rejected"}
+          >
+            ❌ Reject
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          {/* 🗑 Soft Delete */}
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => deleteOrder(order._id)}
+            disabled={isDeleting}
+          >
+            <Trash className="mr-2 h-4 w-4" />
+            {isDeleting ? "Deleting..." : "Delete Purchase Order"}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  },
+}
+  ]
   // ✅ Table Instance with Pagination
   const table = useReactTable({
     data: filteredOrders,
