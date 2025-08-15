@@ -9,7 +9,7 @@ import {
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import ItemActions from "./ItemActions";
+import ItemActions from "./itemActions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
