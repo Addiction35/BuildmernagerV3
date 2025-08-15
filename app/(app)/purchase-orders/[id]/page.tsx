@@ -11,6 +11,7 @@ import { ArrowLeft, Download, Printer, Receipt } from "lucide-react"
 import { fetchPOById } from "@/lib/api/Purchase-Orders"
 import { useReactToPrint } from "react-to-print"
 import { use } from "react"
+import axiosInstance from "@/lib/axios"
 
 export default function PurchaseOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -26,11 +27,26 @@ export default function PurchaseOrderPage({ params }: { params: Promise<{ id: st
     enabled: !!id,
   })
 
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-    documentTitle: `Purchase Order ${purchaseOrder?.poNumber}`,
-    removeAfterPrint: true,
-  })
+
+const handlePrint = async () => {
+  try {
+    const res = await axiosInstance.get(`/purchase-orders/${id}/pdf`, {
+      responseType: "blob",
+    });
+
+    const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+    const printWindow = window.open(url, "_blank");
+
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Could not print PDF");
+  }
+};
 
   const statusColors: Record<string, string> = {
     approved: "bg-green-100 text-green-800",
