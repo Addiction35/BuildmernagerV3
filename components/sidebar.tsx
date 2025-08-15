@@ -99,6 +99,11 @@ const sidebarItems = [
         href: "/settings",
         icon: Settings,
       },
+      {
+        title: "Items",
+        href: "/items",
+        icon: ClipboardList,
+      },
     ],
   },
 ]

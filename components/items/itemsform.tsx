@@ -3,36 +3,44 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import axiosInstance from "@/lib/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export default function AddItemForm({ onItemAdded }) {
+export default function AddItemForm() {
+  const queryClient = useQueryClient();
   const [form, setForm] = useState({ description: "", unit: "", unitPrice: "" });
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const mutation = useMutation({
+    mutationFn: async (newItem: typeof form) => {
+      const res = await axiosInstance.post("/items", {
+        ...newItem,
+        unitPrice: parseFloat(newItem.unitPrice),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Item added successfully!");
+      setForm({ description: "", unit: "", unitPrice: "" });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+    },
+    onError: () => {
+      toast.error("Failed to add item");
+    },
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await axiosInstance.post("/items", {
-        ...form,
-        unitPrice: parseFloat(form.unitPrice),
-      });
-      toast.success("Item added successfully!");
-      setForm({ description: "", unit: "", unitPrice: "" });
-      onItemAdded(res.data);
-    } catch (err) {
-      toast.error("Failed to add item");
-    } finally {
-      setLoading(false);
-    }
+    mutation.mutate(form);
   };
 
   return (
-    <form className="space-y-3 p-4 border rounded-md" onSubmit={handleSubmit}>
+    <form
+      className="space-y-3 p-4 border rounded-md"
+      onSubmit={handleSubmit}
+    >
       <input
         type="text"
         name="description"
@@ -63,10 +71,10 @@ export default function AddItemForm({ onItemAdded }) {
       />
       <button
         type="submit"
-        disabled={loading}
+        disabled={mutation.isPending}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
       >
-        {loading ? "Adding..." : "Add Item"}
+        {mutation.isPending ? "Adding..." : "Add Item"}
       </button>
     </form>
   );
