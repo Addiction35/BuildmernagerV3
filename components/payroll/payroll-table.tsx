@@ -16,7 +16,24 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { toast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import axiosInstance from "@/lib/axios";
@@ -51,17 +68,23 @@ export function PayslipTable() {
 
   // ===== Mutations =====
   const approveMutation = useMutation({
-    mutationFn: (id: string) => axiosInstance.patch(`/payslips/${id}/approve`),
+    mutationFn: (id: string) => axiosInstance.patch(`/pay-slip/${id}/approve`),
     onSuccess: () => {
-      toast({ title: "✅ Approved", description: "Payslip approved successfully" });
+      toast({
+        title: "✅ Approved",
+        description: "Payslip approved successfully",
+      });
       queryClient.invalidateQueries({ queryKey: ["payslips"] });
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: string) => axiosInstance.patch(`/payslips/${id}/reject`),
+    mutationFn: (id: string) => axiosInstance.patch(`/pay-slip/${id}/reject`),
     onSuccess: () => {
-      toast({ title: "❌ Rejected", description: "Payslip rejected successfully" });
+      toast({
+        title: " Rejected",
+        description: "Payslip rejected successfully",
+      });
       queryClient.invalidateQueries({ queryKey: ["payslips"] });
     },
   });
@@ -69,7 +92,10 @@ export function PayslipTable() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => axiosInstance.delete(`/payslips/${id}`),
     onSuccess: () => {
-      toast({ title: "🗑 Deleted", description: "Payslip deleted successfully" });
+      toast({
+        title: "🗑 Deleted",
+        description: "Payslip deleted successfully",
+      });
       queryClient.invalidateQueries({ queryKey: ["payslips"] });
     },
   });
@@ -128,33 +154,103 @@ export function PayslipTable() {
       header: "Actions",
       cell: ({ row }) => {
         const payslip = row.original;
+
         return (
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => approveMutation.mutate(payslip._id)}
-              disabled={payslip.status === "approved"}
-            >
-              Approve
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => rejectMutation.mutate(payslip._id)}
-              disabled={payslip.status === "rejected"}
-            >
-              Reject
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => deleteMutation.mutate(payslip._id)}
-            >
-              Delete
-            </Button>
+            {/* ===== Approve ===== */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={payslip.status === "approved"}
+                >
+                  Approve
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Approve Payslip</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to approve this payslip for{" "}
+                    <b>{payslip.employeeName}</b>?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => approveMutation.mutate(payslip._id)}
+                  >
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* ===== Reject ===== */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={payslip.status === "rejected"}
+                >
+                  Reject
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reject Payslip</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to reject this payslip for{" "}
+                    <b>{payslip.employeeName}</b>? This action can be
+                    reverted later.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => rejectMutation.mutate(payslip._id)}
+                  >
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* ===== Delete ===== */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="ghost">
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Payslip</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to permanently delete this payslip for{" "}
+                    <b>{payslip.employeeName}</b>? This action cannot be
+                    undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => deleteMutation.mutate(payslip._id)}
+                  >
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* ===== View ===== */}
             <Link href={`/payslips/${payslip._id}`}>
-              <Button size="sm" variant="secondary">View</Button>
+              <Button size="sm" variant="secondary">
+                View
+              </Button>
             </Link>
           </div>
         );
@@ -203,8 +299,14 @@ export function PayslipTable() {
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id}>
                 {hg.headers.map((header) => (
-                  <th key={header.id} className="p-3 text-left font-medium text-gray-700">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  <th
+                    key={header.id}
+                    className="p-3 text-left font-medium text-gray-700"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </th>
                 ))}
               </tr>
@@ -215,7 +317,10 @@ export function PayslipTable() {
               <tr key={row.id} className="border-t hover:bg-gray-50">
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="p-3">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
                   </td>
                 ))}
               </tr>
@@ -227,7 +332,8 @@ export function PayslipTable() {
       {/* ===== Pagination ===== */}
       <div className="flex justify-between items-center pt-3">
         <div className="text-sm text-gray-500">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {table.getPageCount()}
         </div>
         <div className="flex gap-2">
           <Button
