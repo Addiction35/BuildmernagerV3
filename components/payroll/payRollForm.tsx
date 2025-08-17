@@ -1,14 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axiosInstance from "@/lib/axios";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import axiosInstance from "@/lib/axios";
-import { toast } from "sonner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import { ChevronsUpDown, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function PayslipForm() {
   const [form, setForm] = useState({
@@ -38,6 +51,15 @@ export default function PayslipForm() {
     (updated[index] as any)[field] = value;
     setForm({ ...form, customDeductions: updated });
   };
+
+  // Fetch projects
+  const { data: projects = [], isLoading: projectsLoading } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/projects");
+      return res.data;
+    },
+  });
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -143,13 +165,51 @@ export default function PayslipForm() {
                   required
                 />
               </div>
-              <div>
-                <Label>Project ID</Label>
-                <Input
-                  name="projectId"
-                  value={form.projectId}
-                  onChange={handleChange}
-                />
+
+              {/* Project Combobox */}
+              <div className="flex flex-col gap-2">
+                <Label>Project</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between"
+                      disabled={projectsLoading}
+                    >
+                      {form.projectId
+                        ? projects.find((p: any) => p._id === form.projectId)?.name
+                        : "Select project"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0 bg-white">
+                    <Command>
+                      <CommandInput placeholder="Search project..." />
+                      <CommandEmpty>No project found.</CommandEmpty>
+                      <CommandGroup>
+                        {projects.map((project: any) => (
+                          <CommandItem
+                            key={project._id}
+                            onSelect={() =>
+                              setForm({ ...form, projectId: project._id })
+                            }
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                form.projectId === project._id
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {project.name} — {project.client?.primaryContact}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
@@ -178,7 +238,9 @@ export default function PayslipForm() {
                     <input
                       type="checkbox"
                       checked={deduction.isPercentage}
-                      onChange={(e) => updateCustomDeduction(index, "isPercentage", e.target.checked)}
+                      onChange={(e) =>
+                        updateCustomDeduction(index, "isPercentage", e.target.checked)
+                      }
                     />
                     <Label>%</Label>
                   </div>
