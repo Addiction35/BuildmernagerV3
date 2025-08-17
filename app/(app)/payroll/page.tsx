@@ -3,10 +3,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PayrollTable } from "@/components/payroll/payroll-table"
-import { PayrollFilter } from "@/components/payroll/payroll-filter"
 import { PayrollSummary } from "@/components/payroll/payroll-summary"
 import { CalendarRange, Download, Plus } from "lucide-react"
+import { PayslipTable } from "@/components/payroll/payroll-table"
 
 export const metadata: Metadata = {
   title: "Payroll | Construction Management",
@@ -102,8 +101,7 @@ export default function PayrollPage() {
               <CardDescription>Manage payroll for the current period</CardDescription>
             </CardHeader>
             <CardContent>
-              <PayrollFilter />
-              <PayrollTable />
+              <PayslipTable />
             </CardContent>
           </Card>
         </TabsContent>
@@ -114,8 +112,7 @@ export default function PayrollPage() {
               <CardDescription>View past payroll periods</CardDescription>
             </CardHeader>
             <CardContent>
-              <PayrollFilter />
-              <PayrollTable />
+               <PayslipTable />
             </CardContent>
           </Card>
         </TabsContent>
