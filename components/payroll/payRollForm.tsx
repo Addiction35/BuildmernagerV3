@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function PayslipForm() {
+  const { toast } = useToast()
   const [form, setForm] = useState({
     employeeName: "",
     date: "",
@@ -77,7 +78,7 @@ export default function PayslipForm() {
       return res.data;
     },
     onSuccess: () => {
-      toast.success("Payslip created successfully!");
+      toast({ title: "Success", description: "paySlip created successfully." })
       setForm({
         employeeName: "",
         date: "",
@@ -89,9 +90,13 @@ export default function PayslipForm() {
         customDeductions: [],
       });
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Error creating payslip");
-    },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to create Slip order. Please try again.",
+          variant: "destructive",
+        })
+      },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
