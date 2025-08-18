@@ -79,7 +79,7 @@ export function DashboardStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${stats?.totalWages?.toLocaleString() ?? "0"}
+            ksh {stats?.totalWages?.toLocaleString() ?? "0"}
           </div>
           <p className="text-xs text-muted-foreground">This month</p>
         </CardContent>
@@ -92,7 +92,7 @@ export function DashboardStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${stats?.totalExpenses?.toLocaleString() ?? "0"}
+            ksh {stats?.totalExpenses?.toLocaleString() ?? "0"}
           </div>
           <p className="text-xs text-muted-foreground">This month</p>
         </CardContent>
