@@ -10,6 +10,28 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82ca9d"
 
 type DataCategory = "expenses" | "purchaseOrders" | "wages"
 
+// Custom label renderer with connector lines
+const renderCustomizedLabel = (props: any) => {
+  const RADIAN = Math.PI / 180
+  const { cx, cy, midAngle, outerRadius, percent, name } = props
+  const radius = outerRadius + 20
+  const x = cx + radius * Math.cos(-midAngle * RADIAN)
+  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="#333"
+      textAnchor={x > cx ? "start" : "end"}
+      dominantBaseline="central"
+      fontSize={12}
+    >
+      {`${name} ${(percent * 100).toFixed(1)}%`}
+    </text>
+  )
+}
+
 export function DashboardPieChart() {
   const [category, setCategory] = useState<DataCategory>("expenses")
 
@@ -41,12 +63,14 @@ export function DashboardPieChart() {
 
   // Map API {reference, amount} -> recharts {name, value}
   const data =
-    getData()?.map((item) => ({
-      name: item.reference || "Unlabeled",
-      value: item.amount,
-      reference: item.reference,
-      amount: item.amount,
-    })) ?? []
+    getData()
+      ?.filter((item) => item.reference && item.amount > 0) // filter empty/zero
+      .map((item) => ({
+        name: item.reference,
+        value: item.amount,
+        reference: item.reference,
+        amount: item.amount,
+      })) ?? []
 
   if (!data || data.length === 0) {
     return <div className="p-4 text-sm text-muted-foreground">No data available for this category.</div>
@@ -81,18 +105,23 @@ export function DashboardPieChart() {
                 data={data}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
+                labelLine={true}
+                label={renderCustomizedLabel}
+                outerRadius={100}
                 fill="#8884d8"
-                dataKey="value" // now matches transformed data
+                dataKey="value"
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()}`, "Amount"]} />
-              <Legend />
+              <Tooltip
+                formatter={(value, _name, props: any) => [
+                  `$${Number(value).toLocaleString()}`,
+                  props.payload?.name || "Reference",
+                ]}
+              />
+              <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>
         </div>
