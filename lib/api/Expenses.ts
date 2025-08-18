@@ -21,7 +21,15 @@ export const updateExpense = async ({ id, updates }) => {
   return data;
 };
 
-export const deleteExpense= async (id) => {
+export const DeleteExpense= async (id) => {
   const { data } = await axiosInstance.delete(`/expenses/${id}`);
+  return data;
+};
+export const ApproveExpense= async (id) => {
+  const { data } = await axiosInstance.patch(`/expenses/${id}/approve`);
+  return data;
+};
+export const RejectExpense= async (id) => {
+  const { data } = await axiosInstance.patch(`/expenses/${id}/reject`);
   return data;
 };

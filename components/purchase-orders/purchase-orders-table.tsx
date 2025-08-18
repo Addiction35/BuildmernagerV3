@@ -37,35 +37,54 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useToast } from "@/components/ui/use-toast"
+
 import { Search, Eye, Edit,  Trash, MoreHorizontal } from "lucide-react"
 import {  usePurchases } from "@/lib/hooks/purchase-orders"
 import { approvePO, rejectPO, softDeletePO } from "@/lib/api/Purchase-Orders"
 
 export function PurchaseOrdersTable() {
   const queryClient = useQueryClient()
+  const { toast } = useToast()
   const { data: purchaseOrders = [], isLoading } = usePurchases()
-
 
   const { mutate: deleteOrder, isLoading: isDeleting } = useMutation({
     mutationFn: softDeletePO,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
+      toast({ title: "Purchase Order deleted", variant: "destructive" })
     },
+    onError: () => toast({ title: "Failed to delete PO", variant: "destructive" }),
   })
 
-const { mutate: approveOrder } = useMutation({
-  mutationFn: approvePO,
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
-  },
-})
+  const { mutate: approveOrder } = useMutation({
+    mutationFn: approvePO,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
+      toast({ title: "Purchase Order approved " })
+    },
+    onError: () => toast({ title: "Failed to approve PO", variant: "destructive" }),
+  })
 
-const { mutate: rejectOrder } = useMutation({
-  mutationFn: rejectPO,
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
-  },
-})
+  const { mutate: rejectOrder } = useMutation({
+    mutationFn: rejectPO,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
+      toast({ title: "Purchase Order rejected " })
+    },
+    onError: () => toast({ title: "Failed to reject PO", variant: "destructive" }),
+  })
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -168,6 +187,7 @@ const { mutate: rejectOrder } = useMutation({
         </DropdownMenuTrigger>
         <DropdownMenuContent className="bg-white" align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
           <DropdownMenuItem asChild>
             <Link href={`/purchase-orders/${order._id}`}>
               <Eye className="mr-2 h-4 w-4" />
@@ -183,33 +203,89 @@ const { mutate: rejectOrder } = useMutation({
 
           <DropdownMenuSeparator />
 
-          {/* ✅ Approve */}
-          <DropdownMenuItem
-            onClick={() => approveOrder(order._id)}
-            disabled={order.status === "Approved"}
-          >
-            ✅ Approve
-          </DropdownMenuItem>
-
-          {/* ❌ Reject */}
-          <DropdownMenuItem
-            onClick={() => rejectOrder(order._id)}
-            disabled={order.status === "Rejected"}
-          >
-            ❌ Reject
-          </DropdownMenuItem>
-
+{/* ✅ Approve with confirmation */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <div>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()} // ⬅ prevents auto-close
+                disabled={order.status === "Approved"}
+              >
+                Approve
+              </DropdownMenuItem>
+            </div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Approve Purchase Order?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will mark the PO as <strong>Approved</strong>.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => approveOrder(order._id)}>
+                Approve
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+          {/* ❌ Reject with confirmation */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem 
+              onSelect={(e) => e.preventDefault()}
+              disabled={order.status === "Rejected"}>
+                 Reject
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reject Purchase Order?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will mark the PO as <strong>Rejected</strong>.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => rejectOrder(order._id)}
+                >
+                  Reject
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <DropdownMenuSeparator />
-
-          {/* 🗑 Soft Delete */}
-          <DropdownMenuItem
-            className="text-destructive"
-            onClick={() => deleteOrder(order._id)}
-            disabled={isDeleting}
-          >
-            <Trash className="mr-2 h-4 w-4" />
-            {isDeleting ? "Deleting..." : "Delete Purchase Order"}
-          </DropdownMenuItem>
+          {/* 🗑 Soft Delete with confirmation */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem className="text-destructive"
+              onSelect={(e) => e.preventDefault()}>
+                
+                <Trash className="mr-2 h-4 w-4" />
+                {isDeleting ? "Deleting..." : "Delete Purchase Order"}
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Purchase Order?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. The purchase order will be soft deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => deleteOrder(order._id)}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
     )

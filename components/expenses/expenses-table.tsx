@@ -29,6 +29,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -38,9 +49,41 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Search, Eye, Edit, Receipt, Trash, MoreHorizontal } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
+import { useQueryClient, useMutation } from "@tanstack/react-query"
+import { DeleteExpense, ApproveExpense, RejectExpense } from "@/lib/api/Expenses"
 
 export function ExpensesTable() {
   const { data: expenses = [], isLoading } = useExpenses()
+    const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+    const { mutate: deleteExpense, isLoading: isDeleting } = useMutation({
+    mutationFn: DeleteExpense,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
+      toast({ title: "Expense Order deleted", variant: "destructive" })
+    },
+    onError: () => toast({ title: "Failed to delete Expense", variant: "destructive" }),
+  })
+
+  const { mutate: approveExpense } = useMutation({
+    mutationFn: ApproveExpense,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
+      toast({ title: "Expense Order approved " })
+    },
+    onError: () => toast({ title: "Failed to approve Expense", variant: "destructive" }),
+  })
+
+  const { mutate: rejectExpense } = useMutation({
+    mutationFn: RejectExpense,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
+      toast({ title: "Expense Order rejected " })
+    },
+    onError: () => toast({ title: "Failed to reject expense", variant: "destructive" }),
+  })
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -165,22 +208,90 @@ export function ExpensesTable() {
                   Edit Expense
                 </Link>
               </DropdownMenuItem>
-              {!expense.billed && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/bills/new?from=${expense._id}`}>
-                      <Receipt className="mr-2 h-4 w-4" />
-                      Create Bill
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <Trash className="mr-2 h-4 w-4" />
-                Delete Expense
+{/* ✅ Approve with confirmation */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <div>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()} // ⬅ prevents auto-close
+                disabled={expense.status === "Approved"}
+              >
+                Approve
               </DropdownMenuItem>
+            </div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Approve Purchase Order?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will mark the PO as <strong>Approved</strong>.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => approveExpense(expense._id)}>
+                Approve
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+          {/* ❌ Reject with confirmation */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem 
+              onSelect={(e) => e.preventDefault()}
+              disabled={expense.status === "Rejected"}>
+                 Reject
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reject Expect Order?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will mark the Expense as <strong>Rejected</strong>.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => rejectExpense(expense._id)}
+                >
+                  Reject
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <DropdownMenuSeparator />
+          {/* 🗑 Soft Delete with confirmation */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem className="text-destructive"
+              onSelect={(e) => e.preventDefault()}>
+                
+                <Trash className="mr-2 h-4 w-4" />
+                {isDeleting ? "Deleting..." : "Delete Purchase Order"}
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Expense ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. The purchase order will be soft deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => deleteExpense(expense._id)}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>              
             </DropdownMenuContent>
           </DropdownMenu>
         )
