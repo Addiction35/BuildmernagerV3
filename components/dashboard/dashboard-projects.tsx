@@ -38,7 +38,6 @@ export function DashboardProjects({ extended = false }: DashboardProjectsProps) 
           <TableHead>Project</TableHead>
           <TableHead>Client</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Progress</TableHead>
           {extended && <TableHead>Value</TableHead>}
           {extended && <TableHead>Due Date</TableHead>}
           <TableHead className="text-right">Actions</TableHead>
@@ -63,17 +62,6 @@ export function DashboardProjects({ extended = false }: DashboardProjectsProps) 
               >
                 {project.status || "Unknown"}
               </Badge>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-full rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: project.progress ?? "0%" }}
-                  />
-                </div>
-                <span className="text-xs font-medium">{project.progress ?? "0%"}</span>
-              </div>
             </TableCell>
             {extended && <TableCell>{project.value ?? "N/A"}</TableCell>}
             {extended && (
