@@ -130,7 +130,7 @@ export function DashboardPieChart() {
             <p className="text-sm font-medium">
               Total {category === "expenses" ? "Expenses" : category === "purchaseOrders" ? "Purchase Orders" : "Wages"}
             </p>
-            <p className="text-2xl font-bold">${total.toLocaleString()}</p>
+            <p className="text-2xl font-bold">Ksh {total.toLocaleString()}</p>
           </div>
           <div>
             <p className="text-sm font-medium">Reference Breakdown</p>
@@ -144,7 +144,7 @@ export function DashboardPieChart() {
                     />
                     <span className="text-xs">{item.reference}</span>
                   </div>
-                  <span className="text-xs font-medium">${item.amount.toLocaleString()}</span>
+                  <span className="text-xs font-medium">ksh {item.amount.toLocaleString()}</span>
                 </div>
               ))}
             </div>
