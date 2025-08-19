@@ -271,7 +271,7 @@ export function ExpensesTable() {
               onSelect={(e) => e.preventDefault()}>
                 
                 <Trash className="mr-2 h-4 w-4" />
-                {isDeleting ? "Deleting..." : "Delete Purchase Order"}
+                {isDeleting ? "Deleting..." : "Delete Expense Order"}
               </DropdownMenuItem>
             </AlertDialogTrigger>
             <AlertDialogContent>

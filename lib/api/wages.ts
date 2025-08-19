@@ -25,3 +25,12 @@ export const deleteWage= async (id) => {
   const { data } = await axiosInstance.delete(`/wages/${id}`);
   return data;
 };
+
+export const ApproveWage= async (id) => {
+  const { data } = await axiosInstance.patch(`/wages/${id}/approve`);
+  return data;
+};
+export const RejectWage= async (id) => {
+  const { data } = await axiosInstance.patch(`/wages${id}/reject`);
+  return data;
+};

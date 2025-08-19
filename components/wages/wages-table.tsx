@@ -13,6 +13,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import {
@@ -30,9 +41,43 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { useToast } from "@/components/ui/use-toast"
+import { useQueryClient, useMutation } from "@tanstack/react-query"
 import { Search, Eye, Edit, Receipt, Trash, MoreHorizontal } from "lucide-react"
+import { ApproveWage, deleteWage, RejectWage } from "@/lib/api/wages"
+
 
 export function WagesTable() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+      const { mutate: deletewage, isLoading: isDeleting } = useMutation({
+    mutationFn: deleteWage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wages"] })
+      toast({ title: "Wage Order deleted", variant: "destructive" })
+    },
+    onError: () => toast({ title: "Failed to delete Wage", variant: "destructive" }),
+  })
+
+  const { mutate: approveWage } = useMutation({
+    mutationFn: ApproveWage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wages"] })
+      toast({ title: "Wage Order approved " })
+    },
+    onError: () => toast({ title: "Failed to approve wage", variant: "destructive" }),
+  })
+
+  const { mutate: rejectWage } = useMutation({
+    mutationFn: RejectWage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wages"] })
+      toast({ title: "Wage Order rejected " })
+    },
+    onError: () => toast({ title: "Failed to reject Wage", variant: "destructive" }),
+  })
+
   const { data: wages = [], isLoading } = useWages()
 
   const [search, setSearch] = useState("")
@@ -139,22 +184,90 @@ export function WagesTable() {
                   Edit Wage
                 </Link>
               </DropdownMenuItem>
-              {!wage.billed && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/bills/new?from=${wage._id}`}>
-                      <Receipt className="mr-2 h-4 w-4" />
-                      Create Bill
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <Trash className="mr-2 h-4 w-4" />
-                Delete Wage
+{/* ✅ Approve with confirmation */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <div>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()} // ⬅ prevents auto-close
+                disabled={wage.status === "Approved"}
+              >
+                Approve
               </DropdownMenuItem>
+            </div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Approve Wage Order?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will mark the Wage as <strong>Approved</strong>.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => ApproveWage(wage._id)}>
+                Approve
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+          {/* ❌ Reject with confirmation */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem 
+              onSelect={(e) => e.preventDefault()}
+              disabled={wage.status === "Rejected"}>
+                 Reject
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reject Wage Order?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will mark the Wage as <strong>Rejected</strong>.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => RejectWage(wage._id)}
+                >
+                  Reject
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <DropdownMenuSeparator />
+          {/* 🗑 Soft Delete with confirmation */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem className="text-destructive"
+              onSelect={(e) => e.preventDefault()}>
+                
+                <Trash className="mr-2 h-4 w-4" />
+                {isDeleting ? "Deleting..." : "Delete Wage Order"}
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Wage ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. The purchase order will be soft deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => deletewage(wage._id)}
+                >
+                  Delete 
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog> 
             </DropdownMenuContent>
           </DropdownMenu>
         )
