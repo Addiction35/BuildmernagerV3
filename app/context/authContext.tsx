@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Remove from both localStorage and cookies
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    Cookies.remove("token");
+    Cookies.remove("token", { path: "/" })
 
     delete axiosInstance.defaults.headers.common["Authorization"];
     setUser(null);
