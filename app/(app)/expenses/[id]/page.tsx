@@ -191,7 +191,7 @@ const tax = subtotal * 0.1; // Assuming a 10% tax rate
 
         <Card className="shadow border">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-700">Wages Order Items</CardTitle>
+            <CardTitle className="text-lg font-semibold text-gray-700">Expense Order Items</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border overflow-x-auto">
@@ -250,15 +250,6 @@ const tax = subtotal * 0.1; // Assuming a 10% tax rate
                       style: "currency",
                       currency: "KES",
                     }).format(subtotal)}
-                  </td>
-                </tr>
-                <tr className="border-t font-medium">
-                  <td colSpan={4} className="p-3 text-right">Tax</td>
-                  <td className="p-3 text-right">
-                    {new Intl.NumberFormat("en-KE", {
-                      style: "currency",
-                      currency: "KES",
-                    }).format(tax ?? 0)}
                   </td>
                 </tr>
                 <tr className="border-t font-bold">
