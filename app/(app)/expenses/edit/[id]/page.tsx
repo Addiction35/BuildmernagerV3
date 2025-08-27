@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { use, useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -49,17 +49,21 @@ type Item = z.infer<typeof ItemSchema>
 type PurchaseOrder = z.infer<typeof PurchaseOrderSchema>
 
 
-export default function EditPurchaseOrder() {
+export default function EditPurchaseOrder({ params }: { params: Promise<{ id: string }> }) {
   const queryClient = useQueryClient()
   const [formData, setFormData] = useState<PurchaseOrder | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["purchase-order", "68ac550fa6e143292281d97a"],
-    queryFn: () => fetchExpenseById("68ac550fa6e143292281d97a"),
-    onSuccess: (data) => {
-      setFormData(data)
-    },
+  const { id } = use(params)
+
+  const {
+    data,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["expenses", id],
+    queryFn: () => fetchExpenseById(id),
+    enabled: !!id,
   })
 
   const updateMutation = useMutation({
