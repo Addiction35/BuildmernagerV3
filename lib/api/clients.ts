@@ -19,9 +19,9 @@ export const GetClientById = async (id) => {
 }
 
 
-export const UpdateClientById = async (payload, id) => {
+export const UpdateClientById = async (id, payload) => {
   const response = await axiosInstance.put(`/clients/${id}`, payload);
-  return response.data;
+  return response.data.client; // Return the updated client directly
 };
 
 export const deleteClientById = async (id: string): Promise<void> => {

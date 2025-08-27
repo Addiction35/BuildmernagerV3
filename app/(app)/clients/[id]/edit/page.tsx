@@ -74,7 +74,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
 
   // ✅ Update mutation
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<Client>) => UpdateClientById(id, data),
+    mutationFn: (data) => UpdateClientById(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["client", id] })
       queryClient.invalidateQueries({ queryKey: ["clients"] })
@@ -148,7 +148,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
             <Link href="/clients">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Clients
+                Back
               </Button>
             </Link>
             <div>
