@@ -8,7 +8,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/ui/date-picker"
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,6 +25,7 @@ import { useCreateProject } from "@/lib/hooks/projectQueries"
 import { useGetClients } from "@/lib/hooks/clientQueries"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "react-hot-toast";
+import { ClientForm } from "../clients/client-form"
 export function ProjectForm() {
   const router = useRouter()
   const { mutate, isLoading, isError, isSuccess } = useCreateProject();
@@ -69,7 +79,7 @@ const onSubmit = (data) => {
         <TabsContent value="general" className="space-y-4 pt-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Project Name</Label>
+              <Label htmlFor="name">Project Name *</Label>
               <Controller
                 name="name"
                 control={control}
@@ -77,7 +87,7 @@ const onSubmit = (data) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="client">Client</Label>
+              <Label htmlFor="client">Client *</Label>
               <Controller
                 name="client"
                 control={control}
@@ -86,12 +96,54 @@ const onSubmit = (data) => {
                     <SelectTrigger id="client">
                       <SelectValue placeholder="Select a client" />
                     </SelectTrigger>
+
                     <SelectContent className="bg-white">
-                      {clients?.map((client) => (
-                        <SelectItem key={client._id} value={client._id}>
-                          {client?.companyName}
-                        </SelectItem>
-                      ))}
+                      {clients && clients.length > 0 ? (
+                        clients.map((client) => (
+                          <SelectItem key={client._id} value={client._id}>
+                            {client.companyName}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="px-2 py-1 text-sm text-muted-foreground">
+                          No clients found
+                        </div>
+                      )}
+
+                      <div className="border-t my-1" />
+
+                      {/* Add Client Button inside the dropdown */}
+                      <div className="px-2 py-1">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="w-full text-blue-600 text-left"
+                              onClick={(e) => e.stopPropagation()} // Important: Prevent select from triggering
+                            >
+                              + Add New Client
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="h-3/4 w-full bg-white overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Add Client</DialogTitle>
+                              <DialogDescription>
+                                Fill out the details to create a new client.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <ClientForm />
+                            <DialogFooter>
+                              <DialogClose asChild>
+                                <Button type="button" variant="outline">
+                                  Cancel
+                                </Button>
+                              </DialogClose>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </SelectContent>
                   </Select>
                 )}

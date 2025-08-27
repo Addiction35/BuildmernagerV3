@@ -13,9 +13,12 @@ export const getAllClients = async (): Promise<Client[]> => {
   return response.data.data
 }
 
-export const GetClientById = async (id: string): Promise<void> => {
-  await axiosInstance.get(`/clients/${id}`)
+export const GetClientById = async (id) => {
+  const response = await axiosInstance.get(`/clients/${id}`)
+  return response.data.client
 }
+
+
 export const UpdateClientById = async (payload, id) => {
   const response = await axiosInstance.put(`/clients/${id}`, payload);
   return response.data;

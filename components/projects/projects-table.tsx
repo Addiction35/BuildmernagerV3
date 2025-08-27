@@ -2,6 +2,18 @@
 
 import { useMemo, useState } from "react"
 import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
+
+import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
@@ -49,17 +61,17 @@ export function ProjectsTable() {
   })
 
   const { data: projects = [], isLoading } = useProjects()
+
   const deleteMutation = useDeleteProject()
 
-  const handleDelete = (id: string) => {
-    if (confirm("Delete this project?")) {
+    const handleDelete = (id: string) => {
       toast.promise(deleteMutation.mutateAsync(id), {
         loading: "Deleting...",
         success: "Deleted",
         error: "Error deleting project",
       })
     }
-  }
+
 
   const columns = useMemo<ColumnDef<any>[]>(() => [
     // ✅ Row Number Column
@@ -158,12 +170,30 @@ export function ProjectsTable() {
                   <Edit className="mr-2 h-4 w-4" /> Edit
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleDelete(id)}
-                className="text-destructive"
-              >
-                <Trash className="mr-2 h-4 w-4" /> Delete
-              </DropdownMenuItem>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem className="text-destructive">
+                    <Trash className="mr-2 h-4 w-4" /> Delete
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. It will permanently delete the project.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleDelete(id)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </DropdownMenuContent>
           </DropdownMenu>
         )

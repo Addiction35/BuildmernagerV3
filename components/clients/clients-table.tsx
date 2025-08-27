@@ -43,7 +43,6 @@ const handleDelete = (id: string) => {
             <TableHead>Type</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Projects</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -73,7 +72,6 @@ const handleDelete = (id: string) => {
                     {client.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{client.projects}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

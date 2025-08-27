@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
@@ -50,7 +50,7 @@ interface Client {
 export default function EditClientPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { toast } = useToast()
-  const { id } = params
+  const { id } = use(params)
   const queryClient = useQueryClient()
 
   // ✅ Fetch client data
