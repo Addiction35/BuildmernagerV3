@@ -79,9 +79,7 @@ export function ExpenseForm() {
 
   const items = watch("items")
   const subtotal = items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0)
-  const tax = subtotal * 0.1
-  const shipping = 0
-  const total = subtotal + tax + shipping
+  const total = subtotal 
 
   useEffect(() => {
     const delay = setTimeout(() => {

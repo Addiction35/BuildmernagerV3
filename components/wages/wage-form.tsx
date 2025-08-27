@@ -79,8 +79,7 @@ export function WagesForm() {
 
   const items = watch("items")
   const subtotal = items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0)
-  const tax = subtotal * 0.1
-  const total = subtotal + tax
+  const total = subtotal 
 
   useEffect(() => {
     const delay = setTimeout(() => {
