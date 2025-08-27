@@ -247,7 +247,7 @@ export function PayslipTable() {
             </AlertDialog>
 
             {/* ===== View ===== */}
-            <Link href={`/payslips/${payslip._id}`}>
+            <Link href={`/payroll/${payslip._id}`}>
               <Button size="sm" variant="secondary">
                 View
               </Button>

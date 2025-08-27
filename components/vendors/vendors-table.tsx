@@ -37,7 +37,7 @@ export function VendorsTable() {
         </TableHeader>
         <TableBody>
           {vendors.map((vendor) => (
-            <TableRow key={vendor.id}>
+            <TableRow key={vendor._id}>
               <TableCell>{vendor.vendorId}</TableCell>
               <TableCell>
                 <Link href={`/vendors/${vendor._id}`} className="font-medium hover:underline">

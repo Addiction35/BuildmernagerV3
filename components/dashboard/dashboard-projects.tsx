@@ -47,7 +47,7 @@ export function DashboardProjects({ extended = false }: DashboardProjectsProps) 
         {displayProjects.map((project) => (
           <TableRow key={project._id}>
             <TableCell className="font-medium">{project.name || "Unnamed Project"}</TableCell>
-            <TableCell>{project.client.primaryContact || "Unknown Client"}</TableCell>
+            <TableCell>{project.client?.primaryContact || "Unknown Client"}</TableCell>
             <TableCell>
               <Badge
                 variant={

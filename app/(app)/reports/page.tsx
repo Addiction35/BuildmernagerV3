@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ReportsTable } from "@/components/reports/reports-table"
 import { ReportsFilter } from "@/components/reports/reports-filter"
-import { ReportTemplates } from "@/components/reports/report-templates"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 
@@ -32,8 +31,7 @@ export default function ReportsPage() {
       <Tabs defaultValue="my-reports" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="my-reports">My Reports</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+
         </TabsList>
         <TabsContent value="my-reports" className="space-y-4">
           <Card>
@@ -46,28 +44,6 @@ export default function ReportsPage() {
             </CardHeader>
             <CardContent className="p-0">
               <ReportsTable />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="templates" className="space-y-4">
-          <Card>
-            <CardHeader className="px-6 py-4">
-              <CardTitle>Report Templates</CardTitle>
-              <CardDescription>Use pre-built templates to quickly generate reports</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ReportTemplates />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="scheduled" className="space-y-4">
-          <Card>
-            <CardHeader className="px-6 py-4">
-              <CardTitle>Scheduled Reports</CardTitle>
-              <CardDescription>Reports that are automatically generated on a schedule</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ReportsTable scheduled={true} />
             </CardContent>
           </Card>
         </TabsContent>

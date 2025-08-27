@@ -6,8 +6,8 @@ export const fetchPayrolls = async () => {
   return data;
 };
 
-export const fetchPayrollById = async (id) => {
-  const { data } = await axiosInstance.get(`/payroll/${id}`);
+export const fetchPayslipById = async (id) => {
+  const { data } = await axiosInstance.get(`/pay-slip/${id}`);
   return data;
 };
 
