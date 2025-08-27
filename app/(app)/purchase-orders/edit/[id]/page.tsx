@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, Plus, Loader2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { fetchPOById, updatePO } from "@/lib/api/Purchase-Orders"
 
 const ItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -46,51 +47,6 @@ const PurchaseOrderSchema = z.object({
 type Item = z.infer<typeof ItemSchema>
 type PurchaseOrder = z.infer<typeof PurchaseOrderSchema>
 
-const fetchPurchaseOrder = async (id: string): Promise<PurchaseOrder> => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  return {
-    _id: "68ac54a1a6e143292281d951",
-    projectId: {
-      _id: "68ac539ca6e143292281d928",
-      name: "Test Project 1",
-    },
-    reference: "ronnie",
-    company: "AcmeCo",
-    status: "declined",
-    date: "2025-08-25",
-    deliveryDate: "2025-08-25",
-    deliveryAddress: "Kahawa wendani",
-    notes: "asdfghjk",
-    vendorName: "Steel Works Inc",
-    vendorContact: "justine mogaka",
-    vendorEmail: "mogakamorekerwa@gmail.com",
-    vendorPhone: "0101986647",
-    vendorAddress: "embakasi",
-    items: [
-      {
-        description: "cement",
-        quantity: 5,
-        unit: "bag",
-        unitPrice: 357,
-      },
-      {
-        description: "matress",
-        quantity: 5,
-        unit: "meter",
-        unitPrice: 50000.01,
-      },
-    ],
-    amount: 276963.55500000005,
-    poNumber: "PO-001",
-  }
-}
-
-const updatePurchaseOrder = async (data: PurchaseOrder): Promise<PurchaseOrder> => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  return data
-}
 
 export default function EditPurchaseOrder() {
   const queryClient = useQueryClient()
@@ -99,14 +55,14 @@ export default function EditPurchaseOrder() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["purchase-order", "68ac54a1a6e143292281d951"],
-    queryFn: () => fetchPurchaseOrder("68ac54a1a6e143292281d951"),
+    queryFn: () => fetchPOById("68ac54a1a6e143292281d951"),
     onSuccess: (data) => {
       setFormData(data)
     },
   })
 
   const updateMutation = useMutation({
-    mutationFn: updatePurchaseOrder,
+    mutationFn: updatePO,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchase-order"] })
       toast({

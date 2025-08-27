@@ -203,7 +203,7 @@ export function ExpensesTable() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/expenses/${expense._id}/edit`}>
+                <Link href={`/expenses/edit/${expense._id}`}>
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Expense
                 </Link>

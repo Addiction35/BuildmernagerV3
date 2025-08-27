@@ -195,7 +195,7 @@ export function PurchaseOrdersTable() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href={`/purchase-orders/${order._id}/edit`}>
+            <Link href={`/purchase-orders/edit/${order._id}`}>
               <Edit className="mr-2 h-4 w-4" />
               Edit PO
             </Link>

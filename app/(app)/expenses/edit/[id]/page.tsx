@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Trash2, Plus, Loader2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import {  updatePO } from "@/lib/api/Purchase-Orders"
+import { fetchExpenseById } from "@/lib/api/Expenses"
 
 const ItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -40,57 +42,12 @@ const PurchaseOrderSchema = z.object({
   vendorAddress: z.string().min(1, "Vendor address is required"),
   items: z.array(ItemSchema).min(1, "At least one item is required"),
   amount: z.number(),
-  poNumber: z.string().min(1, "PO Number is required"),
+  expenseNumber: z.string().min(1, "PO Number is required"),
 })
 
 type Item = z.infer<typeof ItemSchema>
 type PurchaseOrder = z.infer<typeof PurchaseOrderSchema>
 
-const fetchPurchaseOrder = async (id: string): Promise<PurchaseOrder> => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  return {
-    _id: "68ac54a1a6e143292281d951",
-    projectId: {
-      _id: "68ac539ca6e143292281d928",
-      name: "Test Project 1",
-    },
-    reference: "ronnie",
-    company: "AcmeCo",
-    status: "declined",
-    date: "2025-08-25",
-    deliveryDate: "2025-08-25",
-    deliveryAddress: "Kahawa wendani",
-    notes: "asdfghjk",
-    vendorName: "Steel Works Inc",
-    vendorContact: "justine mogaka",
-    vendorEmail: "mogakamorekerwa@gmail.com",
-    vendorPhone: "0101986647",
-    vendorAddress: "embakasi",
-    items: [
-      {
-        description: "cement",
-        quantity: 5,
-        unit: "bag",
-        unitPrice: 357,
-      },
-      {
-        description: "matress",
-        quantity: 5,
-        unit: "meter",
-        unitPrice: 50000.01,
-      },
-    ],
-    amount: 276963.55500000005,
-    poNumber: "PO-001",
-  }
-}
-
-const updatePurchaseOrder = async (data: PurchaseOrder): Promise<PurchaseOrder> => {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  return data
-}
 
 export default function EditPurchaseOrder() {
   const queryClient = useQueryClient()
@@ -98,26 +55,26 @@ export default function EditPurchaseOrder() {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["purchase-order", "68ac54a1a6e143292281d951"],
-    queryFn: () => fetchPurchaseOrder("68ac54a1a6e143292281d951"),
+    queryKey: ["purchase-order", "68ac550fa6e143292281d97a"],
+    queryFn: () => fetchExpenseById("68ac550fa6e143292281d97a"),
     onSuccess: (data) => {
       setFormData(data)
     },
   })
 
   const updateMutation = useMutation({
-    mutationFn: updatePurchaseOrder,
+    mutationFn: updatePO,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchase-order"] })
       toast({
         title: "Success",
-        description: "Purchase order updated successfully",
+        description: "Expense updated successfully",
       })
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to update purchase order",
+        description: "Failed to update Expense order",
         variant: "destructive",
       })
     },
@@ -133,7 +90,7 @@ export default function EditPurchaseOrder() {
       <div className="container mx-auto p-4 sm:p-6 max-w-4xl">
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin" />
-          <span className="ml-2">Loading purchase order...</span>
+          <span className="ml-2">Loading Expense ...</span>
         </div>
       </div>
     )
@@ -143,7 +100,7 @@ export default function EditPurchaseOrder() {
     return (
       <div className="container mx-auto p-4 sm:p-6 max-w-4xl">
         <div className="text-center text-red-500">
-          <p>Error loading purchase order</p>
+          <p>Error loading expense order</p>
         </div>
       </div>
     )
@@ -232,8 +189,8 @@ export default function EditPurchaseOrder() {
   return (
     <div className="container mx-auto p-4 sm:p-6 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-balance">Edit Purchase Order</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">Update purchase order details and items</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-balance">Edit Expense</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">Update Expense details and items</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -244,14 +201,14 @@ export default function EditPurchaseOrder() {
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="poNumber">PO Number</Label>
+              <Label htmlFor="expenseNumber">EXP Number</Label>
               <Input
-                id="poNumber"
-                value={formData.poNumber}
-                onChange={(e) => updateField("poNumber", e.target.value)}
-                className={errors.poNumber ? "border-red-500" : ""}
+                id="expenseNumber"
+                value={formData.expenseNumber}
+                onChange={(e) => updateField("expenseNumber", e.target.value)}
+                className={errors.expenseNumber ? "border-red-500" : ""}
               />
-              {errors.poNumber && <p className="text-red-500 text-sm mt-1">{errors.poNumber}</p>}
+              {errors.expenseNumber && <p className="text-red-500 text-sm mt-1">{errors.expenseNumber}</p>}
             </div>
             <div>
               <Label htmlFor="reference">Reference</Label>

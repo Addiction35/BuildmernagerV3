@@ -179,7 +179,7 @@ export function WagesTable() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/wages/${wage._id}/edit`}>
+                <Link href={`/wages/edit/${wage._id}`}>
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Wage
                 </Link>
