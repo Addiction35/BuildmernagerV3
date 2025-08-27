@@ -16,7 +16,7 @@ export const createVendor = async (vendorData) => {
   return data;
 };
 
-export const updateVendor = async ({ id, updates }) => {
+export const updateVendor = async ({updates, id}) => {
   const { data } = await axiosInstance.put(`/vendors/${id}`, updates);
   return data;
 };

@@ -13,6 +13,14 @@ export const getAllClients = async (): Promise<Client[]> => {
   return response.data.data
 }
 
+export const GetClientById = async (id: string): Promise<void> => {
+  await axiosInstance.get(`/clients/${id}`)
+}
+export const UpdateClientById = async (payload, id) => {
+  const response = await axiosInstance.put(`/clients/${id}`, payload);
+  return response.data;
+};
+
 export const deleteClientById = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/clients/${id}`)
 }
