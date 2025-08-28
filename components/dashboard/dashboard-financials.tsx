@@ -2,6 +2,8 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { useDashBoardGraph } from "@/lib/hooks/summaryQueries"
+import { ifError } from "assert"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 const budgetData = {
@@ -80,7 +82,24 @@ const budgetData = {
   ],
 }
 
+
+
 export function DashboardFinancials() {
+
+  const { data: financials, isLoading, isError } = useDashBoardGraph()
+
+  if(isLoading) {
+    return (
+      <div>Loading...</div>
+    )
+  }
+
+  if(isError) {
+    return (
+      <div>Error on financials</div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-3">

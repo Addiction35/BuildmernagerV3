@@ -1,6 +1,6 @@
 // lib/hooks/useProjectQueries.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPO, deletePO, fetchPOById, fetchPOs, updatePO } from '../api/Purchase-Orders';
+import { createPO, fetchPOById, fetchPOs, permanentDeletePO, updatePO } from '../api/Purchase-Orders';
 
 
 // GET all purchases
@@ -38,7 +38,7 @@ export const useUpdatePo = () => {
 export const useDeletePO = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deletePO,
+    mutationFn: permanentDeletePO,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['purchases'] }),
   });
 };

@@ -12,3 +12,9 @@ export const fetchExpRef = async () => {
   const { data } = await axiosInstance.get('/summary/expenses');
   return data;
 };
+
+//get graph stats for dashboard
+export const DashBoardStats = async () => {
+  const { data } = await axiosInstance.get('/dashboard/financials');
+  return data;
+};

@@ -48,7 +48,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 import { Search, Eye, Edit,  Trash, MoreHorizontal } from "lucide-react"
 import {  usePurchases } from "@/lib/hooks/purchase-orders"
@@ -68,20 +68,20 @@ export function PurchaseOrdersTable() {
     onError: () => toast({ title: "Failed to delete PO", variant: "destructive" }),
   })
 
-  const { mutate: approveOrder } = useMutation({
+  const { mutate: approveOrder, isLoading: isApproving } = useMutation({
     mutationFn: approvePO,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
       toast({ title: "Purchase Order approved " })
     },
-    onError: () => toast({ title: "Failed to approve PO", variant: "destructive" }),
+    onError: () => toast({ title: "Error", description: "Failed to approve PO", variant: "destructive" }),
   })
 
-  const { mutate: rejectOrder } = useMutation({
+  const { mutate: rejectOrder, isLoading: isRejecting } = useMutation({
     mutationFn: rejectPO,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchaseOrders"] })
-      toast({ title: "Purchase Order rejected " })
+      toast({ title: "Error ", description: "Purchase order rejected" })
     },
     onError: () => toast({ title: "Failed to reject PO", variant: "destructive" }),
   })
