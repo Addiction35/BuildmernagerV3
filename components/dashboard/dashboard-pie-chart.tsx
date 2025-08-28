@@ -62,9 +62,9 @@ export function DashboardPieChart() {
   }
 
   // Map API {reference, amount} -> recharts {name, value}
-  const data =
+  const rawData =
     getData()
-      ?.filter((item) => item.reference && item.amount > 0) // filter empty/zero
+      ?.filter((item) => item.reference && item.amount > 0)
       .map((item) => ({
         name: item.reference,
         value: item.amount,
@@ -72,12 +72,14 @@ export function DashboardPieChart() {
         amount: item.amount,
       })) ?? []
 
-  if (!data || data.length === 0) {
-    return <div className="p-4 text-sm text-muted-foreground">No data available for this category.</div>
-  }
+  // ✅ If empty, show one fallback slice
+  const data =
+    rawData.length > 0
+      ? rawData
+      : [{ name: "No Data", value: 1, reference: "N/A", amount: 0 }]
 
-  // Calculate total
-  const total = data.reduce((sum, item) => sum + item.value, 0)
+  // ✅ Calculate total (real total, not counting placeholder)
+  const total = rawData.reduce((sum, item) => sum + item.value, 0)
 
   return (
     <Card className="col-span-4">
@@ -117,7 +119,7 @@ export function DashboardPieChart() {
               </Pie>
               <Tooltip
                 formatter={(value, _name, props: any) => [
-                  `$${Number(value).toLocaleString()}`,
+                  `Ksh ${Number(value).toLocaleString()}`,
                   props.payload?.name || "Reference",
                 ]}
               />
@@ -136,7 +138,7 @@ export function DashboardPieChart() {
             <p className="text-sm font-medium">Reference Breakdown</p>
             <div className="mt-2 space-y-1">
               {data.map((item, index) => (
-                <div key={item.reference} className="flex items-center justify-between">
+                <div key={item.reference + index} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div
                       className="mr-2 h-3 w-3 rounded-full"
@@ -144,7 +146,7 @@ export function DashboardPieChart() {
                     />
                     <span className="text-xs">{item.reference}</span>
                   </div>
-                  <span className="text-xs font-medium">ksh {item.amount.toLocaleString()}</span>
+                  <span className="text-xs font-medium">Ksh {item.amount.toLocaleString()}</span>
                 </div>
               ))}
             </div>
