@@ -89,8 +89,8 @@ const pagination = data?.pagination
               </TableCell>
               <TableCell>{document.type}</TableCell>
               <TableCell>
-                <Link href={`/projects/${document.projectId}`} className="text-blue-600 hover:underline">
-                  {document.project}
+                <Link href={`/projects/${document.projectId?._id}`} className="text-blue-600 hover:underline">
+                  {document.projectId?.name}
                 </Link>
               </TableCell>
               <TableCell>{document.size}</TableCell>
