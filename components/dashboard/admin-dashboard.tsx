@@ -4,22 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { DashboardProjects } from "@/components/dashboard/dashboard-projects"
-import { DashboardTasks } from "@/components/dashboard/dashboard-tasks"
 import { DashboardFinancials } from "@/components/dashboard/dashboard-financials"
-import { DashboardResources } from "@/components/dashboard/dashboard-resources"
 import { DashboardDocuments } from "@/components/dashboard/dashboard-documents"
 import { DashboardPurchaseOrders } from "@/components/dashboard/dashboard-purchase-orders"
 import { DashboardWages } from "@/components/dashboard/dashboard-wages"
 import { DashboardExpenses } from "@/components/dashboard/dashboard-expenses"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardPieChart } from "@/components/dashboard/dashboard-pie-chart"
-import { usePurchases } from "@/lib/hooks/purchase-orders"
-
+import { DocumentsTable } from "../documents/documents-table"
 export function AdminDashboard() {
-
-    
-    
-
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader title="Admin Dashboard" description="Complete system overview and management" />
@@ -88,7 +81,7 @@ export function AdminDashboard() {
                 </Link>
               </CardHeader>
               <CardContent>
-                <DashboardDocuments limit={5} />
+                <DocumentsTable limit={5} />
               </CardContent>
             </Card>
           </div>
@@ -191,7 +184,7 @@ export function AdminDashboard() {
               </Link>
             </CardHeader>
             <CardContent>
-              <DashboardDocuments extended={true} />
+              <DocumentsTable />
             </CardContent>
           </Card>
         </TabsContent>
