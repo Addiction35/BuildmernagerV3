@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const protectedRoutes = [
-  '/Dashboard'
+  '/',
+  '/Dashboard',
+
 ]
 
 export function middleware(req: NextRequest) {

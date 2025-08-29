@@ -15,89 +15,23 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Download, Edit, Eye, MoreHorizontal, Share, Trash } from "lucide-react"
+import { useDocuments } from "@/lib/hooks/documentQueries"
+import { useSearchParams } from "next/navigation"
 
-const documents = [
-  {
-    id: "DOC001",
-    name: "Riverside Apartments - Construction Contract.pdf",
-    type: "Contract",
-    size: "2.4 MB",
-    uploadedBy: "John Smith",
-    uploadDate: "2023-01-15",
-    projectId: "PRJ001",
-    project: "Riverside Apartments",
-    version: "1.0",
-    status: "Final",
-    description: "Main construction contract for Riverside Apartments project",
-  },
-  {
-    id: "DOC002",
-    name: "Downtown Office - Electrical Plans.dwg",
-    type: "Drawing",
-    size: "5.8 MB",
-    uploadedBy: "Sarah Johnson",
-    uploadDate: "2023-03-10",
-    projectId: "PRJ002",
-    project: "Downtown Office Renovation",
-    version: "2.1",
-    status: "For Review",
-    description: "Electrical layout plans for all floors",
-  },
-  {
-    id: "DOC003",
-    name: "Hillside Residence - Building Permit.pdf",
-    type: "Permit",
-    size: "1.2 MB",
-    uploadedBy: "Michael Chen",
-    uploadDate: "2023-02-20",
-    projectId: "PRJ003",
-    project: "Hillside Residence",
-    version: "1.0",
-    status: "Approved",
-    description: "Approved building permit from city authorities",
-  },
-  {
-    id: "DOC004",
-    name: "Community Center - Structural Specifications.docx",
-    type: "Specification",
-    size: "3.5 MB",
-    uploadedBy: "Emily Rodriguez",
-    uploadDate: "2023-05-05",
-    projectId: "PRJ004",
-    project: "Community Center",
-    version: "1.2",
-    status: "Draft",
-    description: "Structural specifications for foundation and framing",
-  },
-  {
-    id: "DOC005",
-    name: "Riverside Apartments - Soil Test Report.pdf",
-    type: "Report",
-    size: "8.7 MB",
-    uploadedBy: "David Kim",
-    uploadDate: "2023-01-05",
-    projectId: "PRJ001",
-    project: "Riverside Apartments",
-    version: "1.0",
-    status: "Final",
-    description: "Geotechnical report with soil testing results",
-  },
-  {
-    id: "DOC006",
-    name: "Retail Store - Interior Design Plans.dwg",
-    type: "Drawing",
-    size: "4.2 MB",
-    uploadedBy: "Lisa Wang",
-    uploadDate: "2023-01-20",
-    projectId: "PRJ005",
-    project: "Retail Store Fitout",
-    version: "3.0",
-    status: "Final",
-    description: "Interior design and fixture layout plans",
-  },
-]
 
 export function DocumentsTable() {
+
+    const searchParams = useSearchParams()
+
+  // Read params from URL
+  const sort = searchParams.get("sort") || "newest"
+  const q = searchParams.get("q") || ""
+  const page = Number(searchParams.get("page") || 1)
+  const limit = Number(searchParams.get("limit") || 10)
+
+  // Call React Query hook with params
+  const { data, isLoading, error } = useDocuments({ sort, q, page, limit })
+
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([])
 
   const toggleDocument = (documentId: string) => {
@@ -110,6 +44,13 @@ export function DocumentsTable() {
     setSelectedDocuments((prev) => (prev.length === documents.length ? [] : documents.map((document) => document.id)))
   }
 
+
+  if (isLoading) return <p>Loading...</p>
+  if (error) return <p>Error loading documents</p>
+
+  
+const documents = data?.documents ?? []
+const pagination = data?.pagination
   return (
     <div className="rounded-md border">
       <Table>
@@ -133,8 +74,8 @@ export function DocumentsTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {documents.map((document) => (
-            <TableRow key={document.id}>
+          {documents?.map((document) => (
+            <TableRow key={document._id}>
               <TableCell>
                 <Checkbox
                   checked={selectedDocuments.includes(document.id)}
